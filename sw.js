@@ -1,7 +1,7 @@
 // ABM Keşif ve Metraj - çevrimdışı çalışma
 // Uygulama dosyaları: önce internetten (güncel sürüm), internet yoksa önbellekten.
 // Yazı tipleri: önbellekten, arkada güncellenir.
-const SURUM = 'abm-kesif-v10-1';
+const SURUM = 'abm-kesif-v11-1';
 const KABUK = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-maskable-512.png'];
 
 self.addEventListener('install', e => {
@@ -15,7 +15,7 @@ self.addEventListener('fetch', e => {
   if (r.method !== 'GET') return;
   const u = new URL(r.url);
   if (u.origin === location.origin) {
-    e.respondWith(fetch(r).then(y => {
+    e.respondWith(fetch(r, { cache: 'no-cache' }).then(y => {
       if (y.ok) { const k = y.clone(); caches.open(SURUM).then(c => c.put(r, k)); }
       return y;
     }).catch(() => caches.match(r).then(m => m || (r.mode === 'navigate' ? caches.match('index.html') : Response.error()))));

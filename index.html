@@ -631,7 +631,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v10</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v11</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -1063,7 +1063,7 @@ function planMiniSvg(pl, boy = 44) {
 }
 
 const Plan = (() => {
-  let k = null, mid = null, pl = null, gecmis = [], bas = null, el = {};
+  let k = null, mid = null, pl = null, gecmis = [], el = {}, arac = 'kalem', iz = null, kalemGoruldu = false;
   const mh = () => mahal(mid);
   function yukle() {
     const x = mh();
@@ -1098,6 +1098,10 @@ const Plan = (() => {
         <button class="ikon-btn" type="button" data-geri-al="1" aria-label="Geri al">${ikon('geriAl', 24)}</button>
         <button class="ikon-btn" type="button" data-plan-menu="1" aria-label="Plan menüsü">${ikon('menu', 26)}</button>
       </div>
+      <div class="araclar" role="toolbar" aria-label="Çizim araçları" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <button type="button" class="arac" data-parac="kalem" aria-pressed="true" style="flex-direction:row;gap:8px;font-size:17px">${ikon('kalem', 24)} KALEM</button>
+        <button type="button" class="arac" data-parac="silgi" aria-pressed="false" style="flex-direction:row;gap:8px;font-size:17px">${ikon('silgi', 24)} SİLGİ</button>
+      </div>
       <div class="plan-sahne" data-sahne="1">
         <div class="ipucu" data-ipucu="1"></div>
         <svg data-svg="1" viewBox="0 0 ${PLAN_W} ${PLAN_H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mahal planı"></svg>
@@ -1113,17 +1117,184 @@ const Plan = (() => {
     k.querySelector('[data-geri-al]').onclick = geriAl;
     k.querySelector('[data-plan-menu]').onclick = menu;
     el.yuk.onclick = () => yukseklikSayfasi();
-    el.svg.addEventListener('pointerdown', e => { if (e.button > 0) return; bas = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
-    el.svg.addEventListener('pointerup', e => {
-      if (!bas || bas.id !== e.pointerId) return;
-      const tasindi = Math.hypot(e.clientX - bas.x, e.clientY - bas.y) > 12;
-      bas = null;
-      if (!tasindi) dokun(svgNok(e));
-    });
-    el.svg.addEventListener('pointercancel', () => { bas = null; });
+    k.querySelectorAll('[data-parac]').forEach(b => b.onclick = () => { arac = b.dataset.parac; cizBilgi(); });
+    el.svg.addEventListener('pointerdown', basla);
+    el.svg.addEventListener('pointermove', surukle);
+    el.svg.addEventListener('pointerup', bitir);
+    el.svg.addEventListener('pointercancel', () => { iz = null; canliCiz(); });
     cizSvg(); cizBilgi();
   }
-  function kapat() { k = null; }
+  function kapat() { k = null; iz = null; }
+  const uzak = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  function basla(e) {
+    const kalem = e.pointerType === 'pen';
+    if (!kalem && e.button > 0) return;
+    if (kalem) kalemGoruldu = true;
+    const avuc = !kalem && kalemGoruldu && e.pointerType === 'touch';
+    // S Pen yan düğmesi basılıyken çizilen çizgi silgi sayılır (cihaza göre çalışmayabilir)
+    const dugme = kalem && ((e.buttons & 2) || (e.buttons & 32) || e.button === 2 || e.button === 5);
+    iz = { id: e.pointerId, x0: e.clientX, y0: e.clientY, pts: [svgNok(e)], silgi: arac === 'silgi' || !!dugme, avuc };
+    if (!avuc) { try { el.svg.setPointerCapture(e.pointerId); } catch (er) { /* önemsiz */ } }
+  }
+  function surukle(e) {
+    if (!iz || iz.id !== e.pointerId || iz.avuc) return;
+    const p = svgNok(e), son = iz.pts[iz.pts.length - 1];
+    if (uzak(p, son) > 2) { iz.pts.push(p); canliCiz(); }
+  }
+  function bitir(e) {
+    if (!iz || iz.id !== e.pointerId) return;
+    const z = iz; iz = null;
+    const tasindi = Math.hypot(e.clientX - z.x0, e.clientY - z.y0) > 12;
+    if (!tasindi) {
+      // avuç/parmak: kalem kullanılıyorsa sadece kapalı planda kenar seçmeye yarar
+      if (z.avuc && !pl.kapali) { canliCiz(); return; }
+      if (z.silgi && !z.avuc) silgiUygula([svgNok(e)]); else dokun(svgNok(e));
+      canliCiz();
+      return;
+    }
+    if (!z.avuc) { if (z.silgi) silgiUygula(z.pts); else cizgiEkle(z.pts); }
+    canliCiz();
+  }
+  function canliCiz() {
+    const c = el.svg && el.svg.querySelector('[data-canli]');
+    if (!c) return;
+    if (!iz || iz.avuc || iz.pts.length < 2) { c.setAttribute('d', ''); return; }
+    c.setAttribute('d', 'M ' + iz.pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L '));
+    c.setAttribute('stroke', iz.silgi ? 'rgba(179,38,30,.35)' : '#5A5A55');
+    c.setAttribute('stroke-width', iz.silgi ? '34' : '5');
+  }
+  // Ramer-Douglas-Peucker sadeleştirme
+  function rdp(P, eps) {
+    if (P.length < 3) return P.slice();
+    const a = P[0], b = P[P.length - 1];
+    let enD = -1, ei = 0;
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+    for (let i = 1; i < P.length - 1; i++) {
+      const d = L < 1e-6 ? uzak(P[i], a) : Math.abs(dy * P[i][0] - dx * P[i][1] + b[0] * a[1] - b[1] * a[0]) / L;
+      if (d > enD) { enD = d; ei = i; }
+    }
+    if (enD > eps) return rdp(P.slice(0, ei + 1), eps).slice(0, -1).concat(rdp(P.slice(ei), eps));
+    return [a, b];
+  }
+  // Sadeleştirilmiş çizgiyi yatay/dikey koşulara ayır
+  function kosular(P) {
+    const r = [];
+    for (let i = 1; i < P.length; i++) {
+      const dx = P[i][0] - P[i - 1][0], dy = P[i][1] - P[i - 1][1];
+      if (Math.hypot(dx, dy) < 8) continue;
+      const yatay = Math.abs(dx) >= Math.abs(dy);
+      const son = r[r.length - 1];
+      if (son && son.yatay === yatay) son.bit = P[i]; else r.push({ yatay, bit: P[i] });
+    }
+    return r;
+  }
+  function insa(bas0, r) {
+    let cur = bas0.slice(); const o = [cur];
+    r.forEach(x => {
+      const nx = x.yatay ? [kareye(x.bit[0]), cur[1]] : [cur[0], kareye(x.bit[1])];
+      if (nx[0] !== cur[0] || nx[1] !== cur[1]) { o.push(nx); cur = nx; }
+    });
+    return o;
+  }
+  function sadelestir(K) {
+    const o = [];
+    K.forEach(p => {
+      if (o.length && o[o.length - 1][0] === p[0] && o[o.length - 1][1] === p[1]) return;
+      o.push(p);
+      while (o.length >= 3) {
+        const a = o[o.length - 3], b = o[o.length - 2], c = o[o.length - 1];
+        if ((a[0] === b[0] && b[0] === c[0]) || (a[1] === b[1] && b[1] === c[1])) o.splice(o.length - 2, 1); else break;
+      }
+    });
+    return o;
+  }
+  // Kenar sırası tersine dönerse ölçü/boşluk indekslerini taşı
+  function tersCevir() {
+    const n = pl.kose.length, ks = n - 1;
+    pl.kose = pl.kose.slice().reverse();
+    const yk = []; for (let i = 0; i < ks; i++) yk[ks - 1 - i] = pl.kenar[i] || {};
+    pl.kenar = yk;
+    pl.bosluk = pl.bosluk.map(b => ({ ...b, kenar: ks - 1 - b.kenar }));
+  }
+  // Geometrisi değişen kenarın eski ölçüsünü temizle
+  function olcuTemizle(eskiK) {
+    const ks = Math.max(0, eskiK.length - 1);
+    for (let i = 0; i < ks; i++) {
+      const a = pl.kose[i], b = pl.kose[i + 1], ea = eskiK[i], eb = eskiK[i + 1];
+      if (!a || !b || a[0] !== ea[0] || a[1] !== ea[1] || b[0] !== eb[0] || b[1] !== eb[1]) {
+        if (pl.kenar[i]) pl.kenar[i] = {};
+        pl.bosluk = pl.bosluk.filter(x => x.kenar !== i);
+      }
+    }
+  }
+  function cizgiEkle(ham) {
+    if (pl.kapali) { bildir('Plan kapalı. Değiştirmek için silgiyle bir kenarı sil, sonra yeniden çiz.', true); return; }
+    if (ham.length < 2) return;
+    let P = rdp(ham, 14);
+    const tol = tolerans() * 2.2;
+    not();
+    if (!pl.kose.length) {
+      const r = kosular(P);
+      if (!r.length) { gecmis.pop(); return; }
+      pl.kose = sadelestir(insa([kareye(P[0][0]), kareye(P[0][1])], r));
+    } else {
+      const K = pl.kose, son = K[K.length - 1], ilk = K[0];
+      const bas = P[0], bit = P[P.length - 1];
+      const sec = [[uzak(bas, son), 'sb'], [uzak(bit, son), 'st'], [uzak(bas, ilk), 'ib'], [uzak(bit, ilk), 'it']].filter(x => x[0] < tol).sort((a, b) => a[0] - b[0]);
+      if (!sec.length) { gecmis.pop(); bildir('Çizgiye son köşeden (ya da ilk köşeden) devam et', true); cizSvg(); return; }
+      const yol = K.length > 1 ? sec[0][1] : sec[0][1].replace('i', 's');
+      if (yol === 'st' || yol === 'it') P = P.slice().reverse();
+      if ((yol === 'ib' || yol === 'it') && K.length > 1) tersCevir();
+      const eski = pl.kose.map(p => p.slice());
+      const r = kosular(P);
+      const yeni = insa(pl.kose[pl.kose.length - 1], r);
+      pl.kose = sadelestir(pl.kose.concat(yeni.slice(1)));
+      olcuTemizle(eski);
+    }
+    // ilk köşeye geri geldiyse planı kapat
+    const K = pl.kose;
+    if (K.length >= 4 && uzak(K[K.length - 1], K[0]) < tol) {
+      if (K[K.length - 1][0] === K[0][0] && K[K.length - 1][1] === K[0][1]) K.pop();
+      kapatIc();
+      return;
+    }
+    degisti();
+  }
+  function silgiUygula(pts) {
+    const K = pl.kose;
+    if (!K.length) return;
+    let hit = null;
+    for (const p of pts) { const i = kenarBul(p); if (i != null) { hit = i; break; } }
+    if (hit == null) {
+      if (K.length === 1 && pts.some(p => uzak(p, K[0]) < tolerans() * 1.6)) { not(); pl.kose = []; degisti(); }
+      return;
+    }
+    not();
+    const n = K.length;
+    if (pl.kapali) {
+      const yk = [];
+      for (let j = 1; j <= n; j++) yk.push(K[(hit + j) % n]);
+      const yeniKenar = [];
+      for (let e = 0; e < n; e++) if (e !== hit) yeniKenar[(e - hit - 1 + n) % n] = pl.kenar[e] || {};
+      pl.kenar = yeniKenar;
+      pl.bosluk = pl.bosluk.filter(b => b.kenar !== hit).map(b => ({ ...b, kenar: (b.kenar - hit - 1 + n) % n }));
+      pl.kose = yk; pl.kapali = false;
+      degisti();
+      bildir('Kenar silindi. Boşluğu kalemle yeniden çiz; diğer ölçüler duruyor.');
+      return;
+    }
+    const ks = n - 1;
+    if (hit < ks / 2 && hit < ks - 1) {
+      pl.kose = K.slice(hit + 1);
+      pl.kenar = pl.kenar.slice(hit + 1);
+      pl.bosluk = pl.bosluk.filter(b => b.kenar > hit).map(b => ({ ...b, kenar: b.kenar - hit - 1 }));
+    } else {
+      pl.kose = K.slice(0, hit + 1);
+      pl.kenar = pl.kenar.slice(0, hit);
+      pl.bosluk = pl.bosluk.filter(b => b.kenar < hit);
+    }
+    degisti();
+  }
   function svgNok(e) {
     const pt = el.svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
     const p = pt.matrixTransform(el.svg.getScreenCTM().inverse());
@@ -1153,9 +1324,9 @@ const Plan = (() => {
     const i = kenarBul(p);
     if (i != null) kenarSayfasi(i);
   }
-  function kapatPlan() {
+  function kapatPlan() { not(); kapatIc(); }
+  function kapatIc() {
     const K = pl.kose, n = K.length, ilk = K[0], son = K[n - 1];
-    not();
     if (son[0] !== ilk[0] && son[1] !== ilk[1]) {
       const onceYatay = K[n - 2][1] === son[1];
       if (onceYatay) son[0] = ilk[0]; else son[1] = ilk[1];
@@ -1163,13 +1334,33 @@ const Plan = (() => {
     }
     if (K.length < 4) { pl = JSON.parse(gecmis.pop()); bildir('Plan en az 4 köşe olmalı', true); cizSvg(); return; }
     pl.kapali = true;
+    duzenle();
     degisti();
     bildir('Plan kapandı. Şimdi her kenara dokunup ölçüsünü gir.');
+  }
+  // Kapalı planda sıra: saat yönünde, Duvar 1 sol üst köşeden başlayan kenar (ölçü/boşluk indeksleri taşınır)
+  function duzenle() {
+    let K = pl.kose, n = K.length;
+    let sa = 0; for (let i = 0; i < n; i++) { const a = K[i], b = K[(i + 1) % n]; sa += a[0] * b[1] - b[0] * a[1]; }
+    if (sa < 0) {
+      // ters çevir: köşe sırası k0,k(n-1),...,k1 ; eski kenar e (ke→ke+1) yeni indeks n-1-e
+      const yk = [K[0]].concat(K.slice(1).reverse());
+      const ken = []; for (let e = 0; e < n; e++) ken[n - 1 - e] = pl.kenar[e] || {};
+      pl.kenar = ken; pl.bosluk = pl.bosluk.map(x => ({ ...x, kenar: n - 1 - x.kenar }));
+      pl.kose = K = yk;
+    }
+    let bi = 0; for (let i = 1; i < n; i++) if (K[i][1] < K[bi][1] || (K[i][1] === K[bi][1] && K[i][0] < K[bi][0])) bi = i;
+    if (bi) {
+      pl.kose = K.slice(bi).concat(K.slice(0, bi));
+      const ken = []; for (let e = 0; e < n; e++) ken[(e - bi + n) % n] = pl.kenar[e] || {};
+      pl.kenar = ken; pl.bosluk = pl.bosluk.map(x => ({ ...x, kenar: (x.kenar - bi + n) % n }));
+    }
   }
   function kenarBul(p) {
     const K = pl.kose, n = K.length, tol = tolerans();
     let en = null, enD = Infinity;
-    for (let i = 0; i < n; i++) {
+    const ks = pl.kapali ? n : n - 1;
+    for (let i = 0; i < ks; i++) {
       const a = K[i], b = K[(i + 1) % n];
       const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1;
       const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2));
@@ -1205,7 +1396,7 @@ const Plan = (() => {
       if (!pl.kapali) { nx = -nx; ny = -ny; }
       const dis = pl.kapali ? 30 : 30;
       const tx = mx + nx * dis, ty = my + ny * dis + 9;
-      const etiket = kn.girilen ? cmYaz(kn.uz) : kn.turetilmis ? '=' + cmYaz(kn.uz) : kn.tahmini ? '~' + cmYaz(kn.uz) + '?' : '?';
+      const etiket = kn.girilen ? cmYaz(kn.uz) : kn.turetilmis ? '=' + cmYaz(kn.uz) : kn.tahmini ? '~' + Math.round(kn.uz * 100) + '?' : '?';
       const renk = kn.girilen ? '#121212' : kn.turetilmis ? '#4A4A46' : '#B3261E';
       s += `<text x="${tx}" y="${ty}" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Arial,sans-serif" font-weight="700" font-size="30" fill="${renk}" paint-order="stroke" stroke="#fff" stroke-width="6"${kn.turetilmis ? ' font-style="italic"' : ''}>${esc(etiket)}</text>`;
       if (pl.kapali) s += `<text x="${mx - nx * 24}" y="${my - ny * 24 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#8A8A84">D${kn.i + 1}</text>`;
@@ -1223,21 +1414,27 @@ const Plan = (() => {
       const ilkAcik = !pl.kapali && i === 0 && n >= 3;
       s += `<circle cx="${p[0]}" cy="${p[1]}" r="${ilkAcik ? 16 : 8}" fill="${ilkAcik ? '#FFC20E' : '#121212'}" stroke="#121212" stroke-width="3"/>`;
     });
+    s += `<path data-canli="1" d="" fill="none" stroke="#5A5A55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
     el.svg.innerHTML = s;
   }
   function cizBilgi() {
     if (!el.bilgi) return;
     const m = mh(), c = planCoz(pl), h = m && m.h;
     el.yuk.textContent = h != null ? `YÜKSEKLİK ${cmYaz(h)} CM` : 'YÜKSEKLİK GİR';
+    k.querySelectorAll('[data-parac]').forEach(b => b.setAttribute('aria-pressed', b.dataset.parac === arac ? 'true' : 'false'));
+    if (arac === 'silgi') {
+      el.ipucu.hidden = false;
+      el.ipucu.textContent = 'Silgi: silmek istediğin kenarın üstünden geç. Kapalı planda kenar silinince plan o noktadan açılır, diğer ölçüler kalır.';
+    }
     el.yuk.classList.toggle('btn-sari', h == null && pl.kapali);
     if (!pl.kapali) {
-      el.ipucu.textContent = pl.kose.length < 1 ? 'Odanın bir köşesine dokun, sonra sırayla diğer köşelere. Kenarlar kendiliğinden 90° olur.' : pl.kose.length < 3 ? 'Sıradaki köşeye dokun.' : 'Sıradaki köşeye dokun. Bitirmek için sarı ilk köşeye dokun.';
+      if (arac !== 'silgi') el.ipucu.textContent = pl.kose.length < 1 ? 'Odanın dış hattını kalemle kâğıda çizer gibi çiz; çizgiler kendiliğinden düzelir, köşeler 90° olur. İstersen köşelere dokunarak da çizebilirsin.' : 'Kalemle son köşeden devam et. Sarı ilk köşeye gelince plan kapanır.';
       el.ipucu.hidden = false;
       el.alt.textContent = pl.kose.length ? `${pl.kose.length} köşe` : 'çizime başla';
-      el.bilgi.innerHTML = `<div class="metin"><b>Plan çiziliyor</b><span>Ölçek önemli değil: şekli çiz, ölçüleri kapandıktan sonra kenarlara dokunarak gir.</span></div>`;
+      el.bilgi.innerHTML = `<div class="metin"><b>Plan çiziliyor</b><span>Ölçek önemli değil: şekli çiz, plan kapanınca kenarlara dokunup ölçüleri gir. Yanlış çizgiyi Silgi ya da Geri al ile düzelt.</span></div>`;
       return;
     }
-    el.ipucu.hidden = true;
+    if (arac !== 'silgi') el.ipucu.hidden = true;
     const girilmeyen = c.kenar.filter(x => !x.girilen && !x.turetilmis).length;
     el.alt.textContent = `${c.kenar.length} duvar · ${girilmeyen ? girilmeyen + ' ölçü eksik' : 'ölçüler tamam'}`;
     const satir = [];
@@ -2553,7 +2750,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v10', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v11', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
