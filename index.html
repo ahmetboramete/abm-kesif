@@ -1730,10 +1730,25 @@ const DriveSync = (() => {
     return r;
   }
   const kacis = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  // Türkçe harfler (İ = I + nokta gibi) farklı kodlanabilir: isimleri sadeleştirip karşılaştır
+  const sade = s => String(s || '').normalize('NFC').replace(/I\u0307/g, 'İ').toLocaleUpperCase('tr-TR').replace(/\s+/g, ' ').trim();
+  async function altKlasorler(ebeveyn) {
+    const q = `mimeType='application/vnd.google-apps.folder' and trashed=false and '${ebeveyn}' in parents`;
+    let sayfa = '', l = [];
+    do {
+      const r = await (await api(`${API}?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name)&spaces=drive&pageSize=1000${sayfa ? '&pageToken=' + encodeURIComponent(sayfa) : ''}`)).json();
+      l = l.concat(r.files || []); sayfa = r.nextPageToken || '';
+    } while (sayfa);
+    return l;
+  }
+  async function klasorBul(ad, ebeveyn) {
+    const hedef = sade(ad);
+    const f = (await altKlasorler(ebeveyn)).find(x => sade(x.name) === hedef);
+    return f ? f.id : null;
+  }
   async function klasorBulYaDaAc(ad, ebeveyn) {
-    const q = `name='${kacis(ad)}' and mimeType='application/vnd.google-apps.folder' and trashed=false` + (ebeveyn ? ` and '${ebeveyn}' in parents` : '');
-    const l = await (await api(`${API}?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive&pageSize=10`)).json();
-    if (l.files && l.files.length) return l.files[0].id;
+    const v = await klasorBul(ad, ebeveyn);
+    if (v) return v;
     const r = await (await api(`${API}?fields=id`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: ad, mimeType: 'application/vnd.google-apps.folder', ...(ebeveyn ? { parents: [ebeveyn] } : {}) }) })).json();
     return r.id;
   }
@@ -1744,10 +1759,8 @@ const DriveSync = (() => {
   async function kokKlasor() {
     let id = ls.al('abm-drive-teklifler');
     if (id && await varMi(id)) return id;
-    const q = `name='${kacis(KOK_AD)}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`;
-    const l = await (await api(`${API}?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive&pageSize=5`)).json();
-    if (!l.files || !l.files.length) { const e = new Error('teklifler yok'); e.code = 'teklifler'; throw e; }
-    id = l.files[0].id;
+    id = await klasorBul(KOK_AD, 'root');
+    if (!id) { const e = new Error('teklifler yok'); e.code = 'teklifler'; throw e; }
     ls.koy('abm-drive-teklifler', id);
     return id;
   }
