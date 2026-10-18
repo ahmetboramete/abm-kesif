@@ -637,7 +637,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v13</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v14</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -670,6 +670,7 @@ function projeSayfasi(p) {
     <label class="alan" for="p-mus"><span class="etiket">Müşteri</span><input id="p-mus" class="yazi" type="text" value="${esc(p ? p.musteri : '')}"></label>
     <label class="alan" for="p-adr"><span class="etiket">Adres</span><input id="p-adr" class="yazi" type="text" value="${esc(p ? p.adres : '')}"></label>
     ${p ? `<button type="button" class="btn btn-kucuk" data-yedek="1">${ikon('indir', 20)} YEDEK AL (FOTOĞRAFLARLA)</button>
+    ${DriveSync.bagli() ? `<button type="button" class="btn btn-kucuk" data-tablet-kaldir="1"${DriveSync.tamamMi() ? '' : ' style="opacity:.45"'}>TABLETTEN KALDIR (DRIVE'DA KALIR)</button>` : ''}
     <button type="button" class="btn btn-kirmizi btn-kucuk" data-sil="1">${ikon('sil', 20)} KEŞFİ SİL</button>` : ''}
     <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`,
     el => {
@@ -686,6 +687,8 @@ function projeSayfasi(p) {
         sayfaKapat();
         if (!p) projeAc(id);
       };
+      const tk = el.querySelector('[data-tablet-kaldir]');
+      if (tk) tk.onclick = () => { sayfaKapat(); DriveSync.tablettenKaldir(); };
       const yd = el.querySelector('[data-yedek]');
       if (yd) yd.onclick = () => yedekAl(p);
       const s = el.querySelector('[data-sil]');
@@ -1668,12 +1671,12 @@ function dxfOlustur(p) {
 }
 
 /* ===== Google Drive senkronu =====
-   Kapsam drive.file: uygulama yalnızca kendi oluşturduğu dosyaları görür.
-   Drive'da: "ABM Keşif Kayıtları" / <proje adı> / proje.json, fotoğraflar (.jpg), <ad> - metraj.csv, <ad> - plan.dxf */
+   Drive'da: TEKLİFLER / <keşif adı> / KEŞİF / proje.json, <ad> - metraj.csv, <ad> - plan.dxf, FOTOĞRAFLAR / *.jpg
+   TEKLİFLER'de aynı adda iş klasörü varsa onun içine yazılır. Uygulama Drive'da hiçbir dosyayı SİLMEZ. */
 const DriveSync = (() => {
   const CID = '41715946005-b4btmro9pjeikot5tu99vci8ii6imua1.apps.googleusercontent.com';
-  const KAPSAM = 'https://www.googleapis.com/auth/drive.file';
-  const KOK_AD = 'ABM Keşif Kayıtları';
+  const KAPSAM = 'https://www.googleapis.com/auth/drive';
+  const KOK_AD = 'TEKLİFLER', KESIF_AD = 'KEŞİF', FOTO_AD = 'FOTOĞRAFLAR';
   const API = 'https://www.googleapis.com/drive/v3/files';
   const YUKLE = 'https://www.googleapis.com/upload/drive/v3/files';
   let token = null, bitis = 0, tc = null, zaman = null, calisiyor = false, tekrar = false;
@@ -1739,10 +1742,13 @@ const DriveSync = (() => {
     try { const r = await (await api(`${API}/${id}?fields=id,trashed`)).json(); return !r.trashed; } catch (e) { if (e.code === 'yok') return false; throw e; }
   }
   async function kokKlasor() {
-    let id = ls.al('abm-drive-kok');
+    let id = ls.al('abm-drive-teklifler');
     if (id && await varMi(id)) return id;
-    id = await klasorBulYaDaAc(KOK_AD, null);
-    ls.koy('abm-drive-kok', id);
+    const q = `name='${kacis(KOK_AD)}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`;
+    const l = await (await api(`${API}?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive&pageSize=5`)).json();
+    if (!l.files || !l.files.length) { const e = new Error('teklifler yok'); e.code = 'teklifler'; throw e; }
+    id = l.files[0].id;
+    ls.koy('abm-drive-teklifler', id);
     return id;
   }
   async function dosyaYaz(id, ad, blob, ebeveyn) {
@@ -1784,16 +1790,22 @@ const DriveSync = (() => {
       const kok = await kokKlasor();
       const d = { ...(p.drive || {}) };
       const ad = dosyaAdi(p.ad);
-      if (!(await varMi(d.klasorId))) { d.klasorId = await klasorBulYaDaAc(ad, kok); d.klasorAd = ad; d.jsonId = d.csvId = d.dxfId = null; }
-      else if (d.klasorAd !== ad) { await api(`${API}/${d.klasorId}?fields=id`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: ad }) }); d.klasorAd = ad; }
+      // TEKLİFLER/<iş adı>/KEŞİF ; iş klasörünün adı ilk kayıttan sonra değiştirilmez (senin klasörün olabilir)
+      if (!(await varMi(d.klasorId))) {
+        if (!(await varMi(d.isKlasorId))) { d.isKlasorId = await klasorBulYaDaAc(ad, kok); d.isKlasorAd = ad; }
+        d.klasorId = await klasorBulYaDaAc(KESIF_AD, d.isKlasorId);
+        d.fotoKlasorId = null; d.jsonId = d.csvId = d.dxfId = null;
+      }
+      if (!(await varMi(d.fotoKlasorId))) d.fotoKlasorId = null;
       // fotoğraflar: sadece yeni olanlar
       for (const f of S.fotolar.slice()) {
         if (S.pid !== pid) break;
         if (!f.ref || (f.driveId && f.driveRef === f.ref)) continue;
+        if (!d.fotoKlasorId) d.fotoKlasorId = await klasorBulYaDaAc(FOTO_AD, d.klasorId);
         const b = await Depo.fotoBlob(f.ref);
         if (!b) continue;
         const m = mahal(f.mahalId);
-        const fid = await dosyaYaz(f.driveRef === f.ref ? f.driveId : null, `${dosyaAdi(m ? m.ad : 'mahal')} - ${f.yuzey} - ${f.id}.jpg`, b.type ? b : new Blob([b], { type: 'image/jpeg' }), d.klasorId);
+        const fid = await dosyaYaz(f.driveRef === f.ref ? f.driveId : null, `${dosyaAdi(m ? m.ad : 'mahal')} - ${f.yuzey} - ${f.id}.jpg`, b.type ? b : new Blob([b], { type: 'image/jpeg' }), d.fotoKlasorId);
         const v = { ...(foto(f.id) || f), driveId: fid, driveRef: f.ref }; delete v.id;
         const i = S.fotolar.findIndex(x => x.id === f.id); if (i >= 0) S.fotolar[i] = { id: f.id, ...v };
         await Depo.yaz(`projeler/${pid}/fotolar/${f.id}`, v).catch(() => {});
@@ -1815,7 +1827,7 @@ const DriveSync = (() => {
       durum[pid] = { zaman: Date.now(), hata: null, kaydediliyor: false };
     } catch (e) {
       console.error(e);
-      durum[pid] = { ...(durum[pid] || {}), kaydediliyor: false, hata: e.code === 'yetki' ? 'yetki' : e.code === 'iptal' ? null : (navigator.onLine === false ? 'internet' : 'hata') };
+      durum[pid] = { ...(durum[pid] || {}), kaydediliyor: false, hata: e.code === 'yetki' ? 'yetki' : e.code === 'teklifler' ? 'teklifler' : e.code === 'iptal' ? null : (navigator.onLine === false ? 'internet' : 'hata') };
     } finally {
       calisiyor = false;
       yay();
@@ -1829,9 +1841,9 @@ const DriveSync = (() => {
     const stil = (bg, renk = '#fff') => `style="display:flex;align-items:center;gap:10px;width:100%;border:0;text-align:left;background:${bg};color:${renk};padding:8px 16px;font-weight:600;font-size:14px;flex-shrink:0;min-height:40px"`;
     if (!bagli()) return `<button type="button" data-drive-baglan="1" ${stil('#E9E9E4', 'var(--ink)')}>${ikon('indir', 18)}<span style="flex-grow:1">${d.hata === 'yetki' || hicBaglandi() ? 'Drive oturumu kapandı · kaydetmek için dokun' : 'Drive bağlı değil · otomatik kaydetmek için dokun'}</span><b>BAĞLAN</b></button>`;
     if (d.kaydediliyor) return `<div ${stil('var(--ink)')}><span>Drive'a kaydediliyor…</span></div>`;
-    if (d.hata) return `<button type="button" data-drive-simdi="1" ${stil('var(--kirmizi)')}><span style="flex-grow:1">${d.hata === 'internet' ? 'İnternet yok · bağlanınca Drive\'a kaydedilecek' : 'Drive\'a kaydedilemedi'}</span><b>TEKRAR DENE</b></button>`;
+    if (d.hata) return `<button type="button" data-drive-simdi="1" ${stil('var(--kirmizi)')}><span style="flex-grow:1">${d.hata === 'internet' ? 'İnternet yok · bağlanınca Drive\'a kaydedilecek' : d.hata === 'teklifler' ? 'Drive\'ım içinde TEKLİFLER klasörü bulunamadı' : 'Drive\'a kaydedilemedi'}</span><b>TEKRAR DENE</b></button>`;
     const saat = d.zaman ? new Date(d.zaman).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
-    return `<button type="button" data-drive-simdi="1" ${stil('#E9E9E4', 'var(--ink)')}><span style="flex-grow:1">${saat ? `Drive'a kaydedildi · ${saat} · ${esc(KOK_AD)} / ${esc(dosyaAdi((proje() || {}).ad))}` : 'Drive bağlı · değişiklikler otomatik kaydedilir'}</span><b>ŞİMDİ KAYDET</b></button>`;
+    return `<button type="button" data-drive-simdi="1" ${stil('#E9E9E4', 'var(--ink)')}><span style="flex-grow:1">${saat ? `Drive'a kaydedildi · ${saat} · ${esc(KOK_AD)} / ${esc(((proje() || {}).drive || {}).isKlasorAd || dosyaAdi((proje() || {}).ad))} / ${KESIF_AD}` : 'Drive bağlı · değişiklikler otomatik kaydedilir'}</span><b>ŞİMDİ KAYDET</b></button>`;
   }
   function seritKur(k) {
     const b = k.querySelector('[data-drive-baglan]'); if (b) b.onclick = () => baglan();
@@ -1894,16 +1906,39 @@ const DriveSync = (() => {
     try { l = await listele(); }
     catch (e) { sayfaKapat(); bildir(e && e.code === 'yetki' ? 'Drive oturumu kapandı, tekrar bağlan.' : 'Drive okunamadı. İnterneti kontrol et.', true); return; }
     sayfaAc(`${sayfaBas('Drive\'dan aç')}
-      ${l.length ? l.map((x, i) => `<button type="button" class="kart" data-dac="${i}" style="text-align:left;cursor:pointer"><span class="kart-bas"><b>${esc(x.y.proje.ad || 'Adsız keşif')}</b><span class="olcu"></span>${ikon('ileri', 20, 2.4)}</span><span style="font-size:15px;color:var(--gri)">${(x.y.mahaller || []).length} mahal · ${(x.y.fotolar || []).length} fotoğraf · son kayıt ${esc(new Date(x.dosya.modifiedTime).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}</span></button>`).join('') : `<div class="bos">Drive'da bu uygulamanın kaydettiği keşif yok. Tablette keşfi açıp Drive'a bağlanınca otomatik kaydedilir.</div>`}
-      <p class="not-kucuk" style="margin:0">Drive'da "${esc(KOK_AD)}" klasörü. Uygulama yalnızca kendi kaydettiği dosyaları görür.</p>`,
+      ${l.length ? l.map((x, i) => `<button type="button" class="kart" data-dac="${i}" style="text-align:left;cursor:pointer"><span class="kart-bas"><b>${esc(x.y.proje.ad || 'Adsız keşif')}</b><span class="olcu"></span>${ikon('ileri', 20, 2.4)}</span><span style="font-size:15px;color:var(--gri)">${(x.y.mahaller || []).length} mahal · ${(x.y.fotolar || []).length} fotoğraf · son kayıt ${esc(new Date(x.dosya.modifiedTime).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}</span></button>`).join('') : `<div class="bos">Drive'da kayıtlı keşif yok. Tablette keşfi açıp Drive'a bağlanınca TEKLİFLER'e otomatik kaydedilir.</div>`}
+      <p class="not-kucuk" style="margin:0">Drive'daki TEKLİFLER / &lt;iş&gt; / KEŞİF klasörlerinde bulunan keşifler.</p>`,
       el => {
         el.querySelector('[data-kapat]').onclick = sayfaKapat;
         el.querySelectorAll('[data-dac]').forEach(b => b.onclick = () => iceAl(l[Number(b.dataset.dac)]));
       });
   }
 
+  // Bu keşfin son hali Drive'da mı? (tabletten kaldırmadan önce)
+  function tamamMi() {
+    const p = proje(), d = durum[S.pid] || {};
+    if (!p || !d.zaman || d.kaydediliyor || d.hata) return false;
+    if (zaman && calisiyor) return false;
+    if (p.guncelleme && d.zaman < Date.parse(p.guncelleme)) return false;
+    if (!p.drive || !p.drive.jsonId) return false;
+    return S.fotolar.every(f => !f.ref || (f.driveId && f.driveRef === f.ref));
+  }
+  async function tablettenKaldir() {
+    const p = proje(); if (!p) return;
+    if (!tamamMi()) { bildir('Önce Drive\'a tam kaydedilmeli. "ŞİMDİ KAYDET"e dokunup bekle.', true); return; }
+    if (!(await onayIste(`"${p.ad}" bu tabletten silinecek. Drive'daki kopya (TEKLİFLER / ${(p.drive || {}).isKlasorAd || p.ad} / KEŞİF) olduğu gibi kalır; gerekirse "DRIVE'DAN AÇ" ile geri getirirsin.`, 'TABLETTEN KALDIR'))) return;
+    const pid = p.id;
+    clearTimeout(zaman);
+    for (const f of S.fotolar.slice()) { await Depo.fotoSil(f.ref); await Depo.sil(`projeler/${pid}/fotolar/${f.id}`).catch(() => {}); }
+    for (const m of S.mahaller.slice()) await Depo.sil(`projeler/${pid}/mahaller/${m.id}`).catch(() => {});
+    await Depo.sil(`projeler/${pid}`).catch(() => {});
+    S.projeler = S.projeler.filter(x => x.id !== pid);
+    delete durum[pid];
+    git('projeler', { pid: null });
+    bildir('Tabletten kaldırıldı, Drive\'da duruyor');
+  }
   window.addEventListener('online', () => { gsiYukle(); planla(3000); });
-  return { gsiYukle, baglan, cikis, bagli, planla, senkron, seritHtml, seritKur, acSayfasi, dinle: cb => { dinleyici.add(cb); return () => dinleyici.delete(cb); }, durum: () => durum[S.pid] || {} };
+  return { gsiYukle, baglan, cikis, bagli, planla, senkron, seritHtml, seritKur, acSayfasi, tamamMi, tablettenKaldir, dinle: cb => { dinleyici.add(cb); return () => dinleyici.delete(cb); }, durum: () => durum[S.pid] || {} };
 })();
 
 /* ===== Mahal notları: yazı + elle detay çizimi (mahal belgesinde saklanır) ===== */
@@ -3053,7 +3088,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v13', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v14', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
