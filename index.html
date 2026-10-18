@@ -143,6 +143,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:2}
 .zoom button{width:44px;height:44px;border-radius:8px;border:2px solid var(--ink);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center}
 .ipucu{position:absolute;left:10px;top:10px;right:64px;background:rgba(18,18,18,.82);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;z-index:2;pointer-events:none}
+.plan-sahne{flex-grow:1;position:relative;overflow:hidden;background:#2A2A27;touch-action:none;user-select:none;-webkit-user-select:none}
+.plan-sahne svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.serit .plan-kucuk{background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-baslik);font-weight:700;font-size:13px;color:var(--ink);padding:2px}
 /* ozet */
 .tablo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--card);border:2px solid var(--ink);border-radius:10px;overflow:hidden}
 .tablo th,.tablo td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--cizgi);font-size:15px;vertical-align:top}
@@ -569,7 +572,8 @@ function sayfaAc(html, kurulum) {
   const kok = $('#sayfa-kok');
   kok.innerHTML = `<div class="perde" data-perde="1"><div class="sayfa" role="dialog" aria-modal="true">${html}</div></div>`;
   const perde = kok.firstElementChild;
-  perde.addEventListener('click', e => { if (e.target === perde) sayfaKapat(); });
+  const acilis = Date.now();
+  perde.addEventListener('click', e => { if (e.target === perde && Date.now() - acilis > 450) sayfaKapat(); });
   if (kurulum) kurulum(perde.querySelector('.sayfa'));
 }
 function sayfaKapat() { $('#sayfa-kok').innerHTML = ''; }
@@ -606,6 +610,7 @@ function projeyeAbone(pid) {
 /* ===== Ekranlar ===== */
 function git(ekran, ek = {}) {
   if (S.ekran === 'editor' && ekran !== 'editor') Editor.kapat();
+  if (S.ekran === 'plan' && ekran !== 'plan') Plan.kapat();
   Object.assign(S, ek);
   S.ekran = ekran;
   ciz();
@@ -617,6 +622,7 @@ function ciz() {
   if (S.ekran === 'proje') return cizProje(k);
   if (S.ekran === 'editor') return Editor.ac(k, foto(S.fid));
   if (S.ekran === 'ozet') return cizOzet(k);
+  if (S.ekran === 'plan') return Plan.ac(k, S.planMid);
 }
 const modMetni = () => Depo.mod === 'bulut' ? 'BULUTA KAYDEDİLİYOR' : Depo.mod === 'yerel' ? 'BU CİHAZA KAYDEDİLİYOR' : 'KAYIT YOK · SAYFA KAPANINCA SİLİNİR';
 const durumCip = () => Depo.mod === 'bulut' ? '<span class="durum">Buluta kaydediliyor</span>' : Depo.mod === 'yerel' ? '<span class="durum">Cihaza kaydediliyor</span>' : '<span class="durum yerel">Kayıt yok</span>';
@@ -625,7 +631,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v9</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v10</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -635,7 +641,7 @@ function cizProjeler(k) {
           <span class="not-kucuk">${esc(tarihYaz(p.tarih))}</span>
         </button>`).join('') : `
         <div class="bos"><b>İlk keşfini başlat</b>
-          <ol><li>Keşif aç: iş adı, müşteri, adres.</li><li>Mahalleri ekle, her duvarın fotoğrafını çek.</li><li>Fotoğrafın üstüne ölçü, kapı, pencere ve not gir.</li><li>Metraj özetini ofiste Excel'e aktar.</li></ol>
+          <ol><li>Sahada: tabletin kamerasıyla fotoğraf çek, ölçü ve notları al.</li><li>Ofiste: keşif aç, mahalleri ekle, planını çiz, kenar ölçülerini gir.</li><li>Kapı/pencereyi duvara ekle, fotoğrafları galeriden bağla.</li><li>Metraj tablosunu (CSV) ve planı (DXF) Drive'a kaydet.</li></ol>
         </div>`}
     </div>
     <div class="alt"><button type="button" class="btn btn-sari" data-yeni-proje="1" style="min-height:64px">${ikon('arti', 26)} YENİ KEŞİF</button>
@@ -710,22 +716,24 @@ function cizProje(k) {
     <div class="govde">
       ${mahaller.length ? mahaller.map(m => {
         const fl = mahalFotolari(m.id);
-        const olc = [m.en != null && m.boy != null ? `${fmt(m.en)} × ${fmt(m.boy)}` : '', m.h != null ? `h ${fmt(m.h)}` : ''].filter(Boolean).join(' · ');
+        const pm = planMetraj(m);
+        const olc = (pm ? [`A ${fmt(pm.alan)} m²`, `çevre ${fmt(pm.cevre)} m`] : [m.en != null && m.boy != null ? `${fmt(m.en)} × ${fmt(m.boy)}` : '']).concat([m.h != null ? `h ${fmt(m.h)}` : '']).filter(Boolean).join(' · ');
         return `<div class="kart">
           <button type="button" class="kart-bas" data-mahal-duzenle="${esc(m.id)}" style="border:0;background:transparent;padding:0;text-align:left;width:100%">
             <b>${esc(m.ad)}</b><span class="olcu">${esc(olc || 'ölçü girilmedi')}</span>${ikon('duzenle', 20)}
           </button>
           <div class="serit">
+            <button type="button" class="kucuk plan-kucuk" data-plan="${esc(m.id)}" aria-label="${esc(m.ad)} planı">${m.plan && m.plan.kose && m.plan.kose.length > 1 ? planMiniSvg(m.plan, 40) : 'PLAN<br>ÇİZ'}</button>
             ${fl.map(f => `<button type="button" class="kucuk${f.ref ? '' : ' kroki-kucuk'}" data-foto="${esc(f.id)}" aria-label="${esc(m.ad + ' ' + yuzeyAdi(f.yuzey))}">${Depo.fotoURLHizli(f.ref) ? `<img src="${esc(Depo.fotoURLHizli(f.ref))}" alt="">` : ''}<i>${esc(f.yuzey)}${(f.notlar || []).length ? ' · ' + f.notlar.length : ''}</i></button>`).join('')}
-            <button type="button" class="kucuk ekle" data-foto-cek="${esc(m.id)}" aria-label="${esc(m.ad)} için fotoğraf çek">${ikon('kamera', 22)}</button>
+            <button type="button" class="kucuk ekle" data-foto-cek="${esc(m.id)}" aria-label="${esc(m.ad)} için fotoğraf ekle">${ikon('galeri', 22)}</button>
           </div>
           <button type="button" class="kart-not" data-mahal-not="${esc(m.id)}">${ikon('defter', 20)}<span>${esc((m.not || '').split('\n').map(x => x.trim()).filter(Boolean).join(' · ') || 'Not ve detay çizimi yok')}</span>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length ? `<b>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length} ÇİZİM</b>` : ''}</button>
         </div>`;
-      }).join('') : `<div class="bos"><b>Mahal ekle</b>Alttaki <b style="font-size:inherit">+</b> düğmesiyle ilk mahali (oda, dükkan, cephe…) ekle. Sonra her duvarın fotoğrafını çekersin.</div>`}
+      }).join('') : `<div class="bos"><b>Mahal ekle</b>Alttaki <b style="font-size:inherit">+</b> düğmesiyle mahali (oda, dükkan…) ekle, <b style="font-size:inherit">planını çiz</b>, kenar ölçülerini gir. Sahada çektiğin fotoğrafları sonra galeriden eklersin.</div>`}
     </div>
     <div class="alt" style="grid-template-columns:64px minmax(0,1fr) 64px">
       <button type="button" class="btn" data-mahal-ekle="1" aria-label="Mahal ekle" style="min-height:64px;padding:0">${ikon('arti', 28)}</button>
-      <button type="button" class="btn btn-sari" data-foto-cek="" style="min-height:64px">${ikon('kamera', 26)} FOTOĞRAF ÇEK</button>
+      <button type="button" class="btn btn-sari" data-foto-cek="" style="min-height:64px">${ikon('galeri', 26)} FOTOĞRAF EKLE</button>
       <button type="button" class="btn btn-siyah" data-ozet="1" aria-label="Metraj özeti" style="min-height:64px;padding:0">${ikon('liste', 28)}</button>
     </div>`;
   k.querySelector('[data-geri]').onclick = () => git('projeler');
@@ -739,6 +747,7 @@ function cizProje(k) {
     sayfaAc(`<div data-not-kok="1"></div>`, el => NotPanel.ac(el.querySelector('[data-not-kok]'), mid, { gomulu: true, kapat: () => { NotPanel.kapat(); sayfaKapat(); ciz(); } }));
   });
   k.querySelectorAll('[data-foto-cek]').forEach(b => b.onclick = () => fotoKaynakSec(b.dataset.fotoCek || null));
+  k.querySelectorAll('[data-plan]').forEach(b => b.onclick = () => git('plan', { planMid: b.dataset.plan }));
 }
 
 function mahalSayfasi(m, sonra) {
@@ -747,7 +756,7 @@ function mahalSayfasi(m, sonra) {
     <label class="alan" for="m-ad"><span class="etiket">Mahal adı</span><input id="m-ad" class="yazi" type="text" autocomplete="off" placeholder="Yaz ya da aşağıdan seç" value="${esc(m ? m.ad : '')}"></label>
     <div class="alan"><span style="display:flex;justify-content:space-between;align-items:baseline"><span class="etiket">Hızlı seç</span><button type="button" data-liste="1" style="border:0;background:transparent;padding:6px 0;font-weight:600;text-decoration:underline">Listeyi düzenle</button></span>
       <div class="cipler">${adlar.map(a => `<button type="button" class="cip" data-ad="${esc(a)}">${esc(a)}</button>`).join('')}</div></div>
-    <div class="alan"><span class="etiket">Ölçüler (cm) <span style="font-weight:500;text-transform:none">· istersen sonra duvar duvar girersin</span></span>
+    <div class="alan"><span class="etiket">Ölçüler (cm) <span style="font-weight:500;text-transform:none">· yükseklik yeter; en/boy sadece plan çizmeyeceksen</span></span>
       <div class="izgara3">
         <label class="alan" for="m-en"><span class="not-kucuk">EN</span><input id="m-en" type="text" inputmode="decimal" value="${esc(m ? cmG(m.en) : '')}" placeholder="cm"></label>
         <label class="alan" for="m-boy"><span class="not-kucuk">BOY</span><input id="m-boy" type="text" inputmode="decimal" value="${esc(m ? cmG(m.boy) : '')}" placeholder="cm"></label>
@@ -756,7 +765,7 @@ function mahalSayfasi(m, sonra) {
     ${m ? `<button type="button" class="btn btn-kirmizi btn-kucuk" data-sil="1">${ikon('sil', 20)} MAHALİ SİL</button>` : ''}
     <div class="izgara2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)">
       <button type="button" class="btn" data-kaydet="0">KAYDET</button>
-      <button type="button" class="btn btn-sari" data-kaydet="1">${ikon('kamera', 22)} KAYDET, FOTO</button>
+      <button type="button" class="btn btn-sari" data-kaydet="1">${ikon('kalem', 22)} KAYDET, PLAN ÇİZ</button>
     </div>`,
     el => {
       el.querySelector('[data-kapat]').onclick = sayfaKapat;
@@ -782,7 +791,7 @@ function mahalSayfasi(m, sonra) {
         if (!m) S.mahaller = S.mahaller.concat([{ id, ...veri }]);
         projeDokun();
         sayfaKapat();
-        if (b.dataset.kaydet === '1' && !sonra) fotoKaynakSec(id);
+        if (b.dataset.kaydet === '1' && !sonra) git('plan', { planMid: id });
         if (sonra) sonra(id);
       });
       const s = el.querySelector('[data-sil]');
@@ -816,10 +825,10 @@ function adListesiSayfasi() {
 function fotoKaynakSec(mid) {
   S.bekleyenFoto = { mid: mid || null };
   sayfaAc(`${sayfaBas('Fotoğraf')}
-    <label for="dosya-kamera" class="btn btn-sari" data-k="kamera" role="button" tabindex="0" style="min-height:72px;cursor:pointer">${ikon('kamera', 28)} KAMERAYI AÇ</label>
-    <label for="dosya-galeri" class="btn" data-k="galeri" role="button" tabindex="0" style="min-height:64px;cursor:pointer">${ikon('galeri', 26)} GALERİDEN SEÇ</label>
+    <label for="dosya-galeri" class="btn btn-sari" data-k="galeri" role="button" tabindex="0" style="min-height:72px;cursor:pointer">${ikon('galeri', 28)} GALERİDEN SEÇ</label>
+    <label for="dosya-kamera" class="btn" data-k="kamera" role="button" tabindex="0" style="min-height:64px;cursor:pointer">${ikon('kamera', 26)} KAMERAYI AÇ</label>
     <button type="button" class="btn" data-kroki="1" style="min-height:64px">${ikon('kalem', 24)} FOTOĞRAFSIZ · BOŞ KROKİ</button>
-    <p class="not-kucuk" style="margin:0;line-height:1.45">Hızlı yol: fotoğrafları cihazın kendi kamerasıyla art arda çek, sonra <b>Galeriden seç</b> ile hepsini birden seç. Sırayla Duvar 1, 2, 3… olarak kaydedilir. Fotoğrafa vakit yoksa <b>Boş kroki</b>: kareli sayfaya kalemle çiz, ölçüyü yaz, metraj aynı şekilde hesaplanır.</p>`,
+    <p class="not-kucuk" style="margin:0;line-height:1.45">Sahada fotoğrafları tabletin kendi kamerasıyla çek (galeriye kaydolur), burada <b>Galeriden seç</b> ile birden seç. Uygulama içinden çekilen fotoğraf galeriye kaydedilmez. Sırayla Duvar 1, 2, 3… olarak kaydedilir. Fotoğrafa vakit yoksa <b>Boş kroki</b>: kareli sayfaya kalemle çiz, ölçüyü yaz, metraj aynı şekilde hesaplanır.</p>`,
     el => {
       el.querySelector('[data-kapat]').onclick = sayfaKapat;
       el.querySelector('[data-kroki]').onclick = () => { S.bekleyenFoto = { mid: mid || null, ...BOS_KROKI() }; yuzeySayfasi(); };
@@ -987,6 +996,416 @@ function yuzeySayfasi() {
   const yeniden = () => sayfaAc(html(), kur);
   yeniden();
 }
+/* ===== Mahal planı (üstten görünüş): köşeler, 90°, kenar ölçüleri, boşluklar ===== */
+/* Veri (mahal.plan): kose: [[x,y]...] çizim birimi (0..1000 × 0..700), kapali: bool,
+   kenar: [{uz: metre|null}] kenar i = kose[i] → kose[i+1], bosluk: [{id, kenar, tur, gen, yuk, kapiBoya}] metre */
+const PLAN_W = 1000, PLAN_H = 700, PLAN_KARE = 25;
+function planCoz(pl) {
+  if (!pl || !Array.isArray(pl.kose) || pl.kose.length < 2) return null;
+  const K = pl.kose, n = K.length, kapali = !!pl.kapali && n >= 4;
+  const ks = kapali ? n : n - 1;
+  const kenar = [];
+  for (let i = 0; i < ks; i++) {
+    const a = K[i], b = K[(i + 1) % n];
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const yatay = Math.abs(dx) >= Math.abs(dy);
+    const g = (pl.kenar && pl.kenar[i]) || {};
+    kenar.push({ i, yatay, isaret: (yatay ? Math.sign(dx) : Math.sign(dy)) || 1, cizimUz: Math.hypot(dx, dy), uz: g.uz > 0 ? g.uz : null, girilen: g.uz > 0, turetilmis: false, tahmini: false });
+  }
+  const uyarilar = [];
+  if (kapali) {
+    [['yatay', true], ['dikey', false]].forEach(([ad, yt]) => {
+      const l = kenar.filter(k => k.yatay === yt);
+      const bil = l.filter(k => k.uz == null);
+      const top = l.filter(k => k.uz != null).reduce((s, k) => s + k.isaret * k.uz, 0);
+      if (bil.length === 1) {
+        const v = -top * bil[0].isaret;
+        if (v > 0.0005) { bil[0].uz = v; bil[0].turetilmis = true; }
+        else uyarilar.push(`${ad[0].toUpperCase() + ad.slice(1)} kenarlar tutmuyor: girilen ölçülerle Duvar ${bil[0].i + 1} hesaplanamadı.`);
+      } else if (!bil.length && Math.abs(top) > 0.0105) {
+        uyarilar.push(`Ölçüler kapanmıyor: ${ad} kenarlarda ${Math.round(Math.abs(top) * 100)} cm fark var.`);
+      }
+    });
+  }
+  const bilinen = kenar.filter(k => k.girilen);
+  const olcek = bilinen.length ? bilinen.reduce((s, k) => s + k.uz, 0) / bilinen.reduce((s, k) => s + k.cizimUz, 0) : null;
+  let eksik = 0;
+  kenar.forEach(k => { if (k.uz == null) { eksik++; if (olcek) { k.uz = k.cizimUz * olcek; k.tahmini = true; } } });
+  let koseM = null, alan = null, cevre = null;
+  if (kenar.length && kenar.every(k => k.uz != null)) {
+    koseM = [[0, 0]];
+    kenar.forEach(k => { const p = koseM[koseM.length - 1]; koseM.push(k.yatay ? [p[0] + k.isaret * k.uz, p[1]] : [p[0], p[1] + k.isaret * k.uz]); });
+    if (kapali) koseM.pop();
+    cevre = kenar.reduce((s, k) => s + k.uz, 0);
+    if (kapali) {
+      let s = 0;
+      for (let i = 0; i < koseM.length; i++) { const a = koseM[i], b = koseM[(i + 1) % koseM.length]; s += a[0] * b[1] - b[0] * a[1]; }
+      alan = Math.abs(s) / 2;
+    }
+  }
+  return { kapali, kenar, koseM, alan, cevre, uyarilar, eksik, tahminVar: kenar.some(k => k.tahmini) };
+}
+function planMetraj(m) {
+  const c = planCoz(m && m.plan);
+  if (!c || !c.kapali || c.alan == null) return null;
+  const bosluklar = ((m.plan && m.plan.bosluk) || []).filter(b => b.kenar < c.kenar.length)
+    .map(b => ({ ...b, kod: (BOSLUK_TUR[b.tur] || {}).kod || '', duvar: true, yuzey: 'D' + (b.kenar + 1) }));
+  return { ...c, bosluklar };
+}
+const cmYaz = m => m == null ? '?' : String(Math.round(m * 1000) / 10).replace('.', ',');
+function planMiniSvg(pl, boy = 44) {
+  if (!pl || !pl.kose || pl.kose.length < 2) return '';
+  const xs = pl.kose.map(p => p[0]), ys = pl.kose.map(p => p[1]);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(1, Math.max(...xs) - x0), h = Math.max(1, Math.max(...ys) - y0);
+  const pad = Math.max(w, h) * 0.12;
+  const pts = pl.kose.map(p => `${p[0]},${p[1]}`).join(' ');
+  return `<svg viewBox="${x0 - pad} ${y0 - pad} ${w + 2 * pad} ${h + 2 * pad}" width="100%" height="${boy}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><${pl.kapali ? 'polygon' : 'polyline'} points="${pts}" fill="${pl.kapali ? '#FFFBEA' : 'none'}" stroke="#121212" stroke-width="${Math.max(w, h) / 22}" stroke-linejoin="round"/></svg>`;
+}
+
+const Plan = (() => {
+  let k = null, mid = null, pl = null, gecmis = [], bas = null, el = {};
+  const mh = () => mahal(mid);
+  function yukle() {
+    const x = mh();
+    pl = JSON.parse(JSON.stringify((x && x.plan) || {}));
+    pl.kose = Array.isArray(pl.kose) ? pl.kose : [];
+    pl.kenar = Array.isArray(pl.kenar) ? pl.kenar : [];
+    pl.bosluk = Array.isArray(pl.bosluk) ? pl.bosluk : [];
+    pl.kapali = !!pl.kapali;
+  }
+  function kaydetPlan() {
+    const i = S.mahaller.findIndex(x => x.id === mid);
+    if (i < 0) return;
+    S.mahaller[i] = { ...S.mahaller[i], plan: JSON.parse(JSON.stringify(pl)) };
+    const v = { ...S.mahaller[i] }; delete v.id;
+    kaydet(`projeler/${S.pid}/mahaller/${mid}`, v);
+    projeDokun();
+  }
+  const not = () => { gecmis.push(JSON.stringify(pl)); if (gecmis.length > 80) gecmis.shift(); };
+  function degisti() { kaydetPlan(); cizSvg(); cizBilgi(); }
+
+  function ac(kap, mid_) {
+    k = kap;
+    if (mid !== mid_) gecmis = [];
+    mid = mid_;
+    const m = mh();
+    if (!m) { git('proje'); return; }
+    yukle();
+    k.innerHTML = `
+      <div class="bas">
+        <button class="ikon-btn" type="button" data-geri="1" aria-label="Keşfe dön">${ikon('geri', 26)}</button>
+        <div class="baslik"><b>${esc(m.ad)} · PLAN</b><span data-plan-alt="1"></span></div>
+        <button class="ikon-btn" type="button" data-geri-al="1" aria-label="Geri al">${ikon('geriAl', 24)}</button>
+        <button class="ikon-btn" type="button" data-plan-menu="1" aria-label="Plan menüsü">${ikon('menu', 26)}</button>
+      </div>
+      <div class="plan-sahne" data-sahne="1">
+        <div class="ipucu" data-ipucu="1"></div>
+        <svg data-svg="1" viewBox="0 0 ${PLAN_W} ${PLAN_H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mahal planı"></svg>
+      </div>
+      <div class="bilgi" data-bilgi="1"></div>
+      <div class="alt" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+        <button type="button" class="btn" data-yukseklik="1">YÜKSEKLİK</button>
+        <button type="button" class="btn btn-siyah" data-bitti="1">BİTTİ</button>
+      </div>`;
+    el = { svg: k.querySelector('[data-svg]'), bilgi: k.querySelector('[data-bilgi]'), ipucu: k.querySelector('[data-ipucu]'), alt: k.querySelector('[data-plan-alt]'), yuk: k.querySelector('[data-yukseklik]') };
+    k.querySelector('[data-geri]').onclick = () => git('proje');
+    k.querySelector('[data-bitti]').onclick = () => git('proje');
+    k.querySelector('[data-geri-al]').onclick = geriAl;
+    k.querySelector('[data-plan-menu]').onclick = menu;
+    el.yuk.onclick = () => yukseklikSayfasi();
+    el.svg.addEventListener('pointerdown', e => { if (e.button > 0) return; bas = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
+    el.svg.addEventListener('pointerup', e => {
+      if (!bas || bas.id !== e.pointerId) return;
+      const tasindi = Math.hypot(e.clientX - bas.x, e.clientY - bas.y) > 12;
+      bas = null;
+      if (!tasindi) dokun(svgNok(e));
+    });
+    el.svg.addEventListener('pointercancel', () => { bas = null; });
+    cizSvg(); cizBilgi();
+  }
+  function kapat() { k = null; }
+  function svgNok(e) {
+    const pt = el.svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(el.svg.getScreenCTM().inverse());
+    return [Math.max(0, Math.min(PLAN_W, p.x)), Math.max(0, Math.min(PLAN_H, p.y))];
+  }
+  const kareye = v => Math.round(v / PLAN_KARE) * PLAN_KARE;
+  const tolerans = () => { const r = el.svg.getBoundingClientRect(); return 26 * PLAN_W / Math.max(1, r.width) * 1.0 + 10; };
+  function dokun(p) {
+    const K = pl.kose;
+    if (!pl.kapali) {
+      if (K.length >= 3 && Math.hypot(p[0] - K[0][0], p[1] - K[0][1]) < tolerans() * 1.4) { kapatPlan(); return; }
+      let q = [kareye(p[0]), kareye(p[1])];
+      if (K.length) {
+        const o = K[K.length - 1];
+        q = Math.abs(q[0] - o[0]) >= Math.abs(q[1] - o[1]) ? [q[0], o[1]] : [o[0], q[1]];
+        if (q[0] === o[0] && q[1] === o[1]) return;
+        // aynı yönde devam ediyorsa önceki köşeyi uzat (gereksiz köşe olmasın)
+        if (K.length >= 2) {
+          const oo = K[K.length - 2];
+          const ayniYon = (oo[1] === o[1] && o[1] === q[1] && Math.sign(o[0] - oo[0]) === Math.sign(q[0] - o[0])) || (oo[0] === o[0] && o[0] === q[0] && Math.sign(o[1] - oo[1]) === Math.sign(q[1] - o[1]));
+          if (ayniYon) { not(); K[K.length - 1] = q; degisti(); return; }
+        }
+      }
+      not(); K.push(q); degisti();
+      return;
+    }
+    const i = kenarBul(p);
+    if (i != null) kenarSayfasi(i);
+  }
+  function kapatPlan() {
+    const K = pl.kose, n = K.length, ilk = K[0], son = K[n - 1];
+    not();
+    if (son[0] !== ilk[0] && son[1] !== ilk[1]) {
+      const onceYatay = K[n - 2][1] === son[1];
+      if (onceYatay) son[0] = ilk[0]; else son[1] = ilk[1];
+      if (son[0] === K[n - 2][0] && son[1] === K[n - 2][1]) K.pop();
+    }
+    if (K.length < 4) { pl = JSON.parse(gecmis.pop()); bildir('Plan en az 4 köşe olmalı', true); cizSvg(); return; }
+    pl.kapali = true;
+    degisti();
+    bildir('Plan kapandı. Şimdi her kenara dokunup ölçüsünü gir.');
+  }
+  function kenarBul(p) {
+    const K = pl.kose, n = K.length, tol = tolerans();
+    let en = null, enD = Infinity;
+    for (let i = 0; i < n; i++) {
+      const a = K[i], b = K[(i + 1) % n];
+      const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2));
+      const d = Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+      if (d < enD) { enD = d; en = i; }
+    }
+    return enD < tol * 1.6 ? en : null;
+  }
+  function geriAl() {
+    if (!gecmis.length) { bildir('Geri alınacak bir şey yok'); return; }
+    pl = JSON.parse(gecmis.pop());
+    degisti();
+  }
+  function cizSvg() {
+    if (!el.svg) return;
+    const K = pl.kose, c = planCoz(pl), n = K.length;
+    let s = `<defs><pattern id="pk" width="${PLAN_KARE}" height="${PLAN_KARE}" patternUnits="userSpaceOnUse"><path d="M ${PLAN_KARE} 0 L 0 0 0 ${PLAN_KARE}" fill="none" stroke="#E4E4DE" stroke-width="1"/></pattern>
+      <pattern id="pk4" width="${PLAN_KARE * 4}" height="${PLAN_KARE * 4}" patternUnits="userSpaceOnUse"><rect width="${PLAN_KARE * 4}" height="${PLAN_KARE * 4}" fill="url(#pk)"/><path d="M ${PLAN_KARE * 4} 0 L 0 0 0 ${PLAN_KARE * 4}" fill="none" stroke="#CFCFC8" stroke-width="1.5"/></pattern></defs>
+      <rect x="0" y="0" width="${PLAN_W}" height="${PLAN_H}" fill="#fff"/><rect x="0" y="0" width="${PLAN_W}" height="${PLAN_H}" fill="url(#pk4)"/>`;
+    if (n >= 2) {
+      const pts = K.map(p => p.join(',')).join(' ');
+      s += pl.kapali ? `<polygon points="${pts}" fill="#FFFBEA" stroke="#121212" stroke-width="7" stroke-linejoin="miter"/>` : `<polyline points="${pts}" fill="none" stroke="#121212" stroke-width="7" stroke-linejoin="miter"/>`;
+    }
+    // ölçü etiketleri ve duvar adları
+    let isaretAlan = 0;
+    if (pl.kapali) for (let i = 0; i < n; i++) { const a = K[i], b = K[(i + 1) % n]; isaretAlan += a[0] * b[1] - b[0] * a[1]; }
+    if (c) c.kenar.forEach(kn => {
+      const a = K[kn.i], b = K[(kn.i + 1) % n];
+      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      let nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L; // sağ normal
+      if (pl.kapali && isaretAlan < 0) { nx = -nx; ny = -ny; }
+      if (!pl.kapali) { nx = -nx; ny = -ny; }
+      const dis = pl.kapali ? 30 : 30;
+      const tx = mx + nx * dis, ty = my + ny * dis + 9;
+      const etiket = kn.girilen ? cmYaz(kn.uz) : kn.turetilmis ? '=' + cmYaz(kn.uz) : kn.tahmini ? '~' + cmYaz(kn.uz) + '?' : '?';
+      const renk = kn.girilen ? '#121212' : kn.turetilmis ? '#4A4A46' : '#B3261E';
+      s += `<text x="${tx}" y="${ty}" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Arial,sans-serif" font-weight="700" font-size="30" fill="${renk}" paint-order="stroke" stroke="#fff" stroke-width="6"${kn.turetilmis ? ' font-style="italic"' : ''}>${esc(etiket)}</text>`;
+      if (pl.kapali) s += `<text x="${mx - nx * 24}" y="${my - ny * 24 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#8A8A84">D${kn.i + 1}</text>`;
+      // boşluklar
+      const bl = pl.bosluk.filter(x => x.kenar === kn.i);
+      bl.forEach((x, j) => {
+        const t = (j + 1) / (bl.length + 1), px = a[0] + (b[0] - a[0]) * t, py = a[1] + (b[1] - a[1]) * t;
+        const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, yar = Math.min(34, L / (bl.length + 1) / 2.4);
+        const rk = x.tur === 'pencere' ? '#1E6FD9' : x.tur === 'aciklik' ? '#fff' : '#FFC20E';
+        s += `<line x1="${px - ux * yar}" y1="${py - uy * yar}" x2="${px + ux * yar}" y2="${py + uy * yar}" stroke="${rk}" stroke-width="13"${x.tur === 'aciklik' ? ' stroke-dasharray="6 5"' : ''}/>`;
+        s += `<text x="${px - nx * 50}" y="${py - ny * 50 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#121212">${esc((BOSLUK_TUR[x.tur] || {}).kod || '')}</text>`;
+      });
+    });
+    K.forEach((p, i) => {
+      const ilkAcik = !pl.kapali && i === 0 && n >= 3;
+      s += `<circle cx="${p[0]}" cy="${p[1]}" r="${ilkAcik ? 16 : 8}" fill="${ilkAcik ? '#FFC20E' : '#121212'}" stroke="#121212" stroke-width="3"/>`;
+    });
+    el.svg.innerHTML = s;
+  }
+  function cizBilgi() {
+    if (!el.bilgi) return;
+    const m = mh(), c = planCoz(pl), h = m && m.h;
+    el.yuk.textContent = h != null ? `YÜKSEKLİK ${cmYaz(h)} CM` : 'YÜKSEKLİK GİR';
+    el.yuk.classList.toggle('btn-sari', h == null && pl.kapali);
+    if (!pl.kapali) {
+      el.ipucu.textContent = pl.kose.length < 1 ? 'Odanın bir köşesine dokun, sonra sırayla diğer köşelere. Kenarlar kendiliğinden 90° olur.' : pl.kose.length < 3 ? 'Sıradaki köşeye dokun.' : 'Sıradaki köşeye dokun. Bitirmek için sarı ilk köşeye dokun.';
+      el.ipucu.hidden = false;
+      el.alt.textContent = pl.kose.length ? `${pl.kose.length} köşe` : 'çizime başla';
+      el.bilgi.innerHTML = `<div class="metin"><b>Plan çiziliyor</b><span>Ölçek önemli değil: şekli çiz, ölçüleri kapandıktan sonra kenarlara dokunarak gir.</span></div>`;
+      return;
+    }
+    el.ipucu.hidden = true;
+    const girilmeyen = c.kenar.filter(x => !x.girilen && !x.turetilmis).length;
+    el.alt.textContent = `${c.kenar.length} duvar · ${girilmeyen ? girilmeyen + ' ölçü eksik' : 'ölçüler tamam'}`;
+    const satir = [];
+    if (c.alan != null) satir.push(`Alan <b>${fmt(c.alan)} m²</b>`, `Çevre <b>${fmt(c.cevre)} m</b>`);
+    if (c.cevre != null && h != null) satir.push(`Duvar brüt <b>${fmt(c.cevre * h)} m²</b>`);
+    const uyari = c.uyarilar.concat(c.tahminVar ? ['Kırmızı ~ ölçüler çizimden tahmin; kenara dokunup gerçek ölçüyü gir.'] : (!c.koseM ? ['Kenarlara dokunup ölçü gir (cm).'] : []));
+    el.bilgi.innerHTML = `<div class="metin"><b style="font-family:var(--f-govde);font-size:16px;font-weight:500">${satir.join(' · ') || 'Ölçü bekleniyor'}</b>${uyari.length ? `<span style="color:var(--kirmizi);font-weight:600">${esc(uyari.join(' '))}</span>` : '<span>Bir kenara dokun: ölçü, kapı, pencere.</span>'}</div>`;
+  }
+  function kenarSayfasi(i) {
+    const c = planCoz(pl), kn = c && c.kenar[i];
+    if (!kn) return;
+    const bl = pl.bosluk.filter(x => x.kenar === i);
+    sayfaAc(`${sayfaBas('Duvar ' + (i + 1))}
+      <label class="alan" for="k-uz"><span class="etiket">Uzunluk (cm)</span><input id="k-uz" type="text" inputmode="decimal" autocomplete="off" value="${kn.girilen ? esc(cmG(kn.uz)) : ''}" placeholder="${kn.turetilmis ? 'Boş bırak: ' + cmYaz(kn.uz) + ' hesaplanıyor' : 'Örn. 385'}"></label>
+      ${kn.turetilmis ? `<p class="not-kucuk" style="margin:-6px 0 0">Bu kenar diğer ölçülerden hesaplandı (${cmYaz(kn.uz)} cm). İstersen ölçtüğün değeri yaz, tutmazsa uyarı çıkar.</p>` : ''}
+      <div class="alan"><span class="etiket">Bu duvardaki boşluklar</span>
+        ${bl.length ? bl.map(x => `<div style="display:flex;align-items:center;gap:8px;min-height:44px;border-bottom:1px solid var(--cizgi)"><b style="flex-grow:1;font-size:17px">${esc((BOSLUK_TUR[x.tur] || {}).ad || x.tur)} · ${cmYaz(x.gen)} × ${cmYaz(x.yuk)} cm${(x.tur === 'kapi' || x.tur === 'balkon') && x.kapiBoya !== false ? ' · boyanacak' : x.tur === 'pencere' && x.kapiBoya ? ' · doğrama boyanacak' : ''}</b><button type="button" class="cip" data-bd="${esc(x.id)}">DÜZENLE</button></div>`).join('') : '<span class="not-kucuk">Yok</span>'}
+      </div>
+      <div class="izgara3">
+        <button type="button" class="btn btn-kucuk" data-be="kapi">+ KAPI</button>
+        <button type="button" class="btn btn-kucuk" data-be="pencere">+ PENCERE</button>
+        <button type="button" class="btn btn-kucuk" data-be="aciklik">+ AÇIKLIK</button>
+      </div>
+      <button type="button" class="btn btn-siyah" data-kk="1">KAYDET</button>`,
+      s => {
+        s.querySelector('[data-kapat]').onclick = sayfaKapat;
+        const inp = s.querySelector('#k-uz');
+        setTimeout(() => { try { inp.focus(); } catch (e) {} }, 60);
+        const uzKaydet = () => {
+          const v = cmOku(inp.value);
+          const eski = (pl.kenar[i] && pl.kenar[i].uz) || null;
+          if ((v || null) !== eski) { not(); while (pl.kenar.length <= i) pl.kenar.push({}); pl.kenar[i] = { ...(pl.kenar[i] || {}), uz: v && v > 0 ? v : null }; }
+        };
+        s.querySelector('[data-kk]').onclick = () => { uzKaydet(); sayfaKapat(); degisti(); };
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); uzKaydet(); sayfaKapat(); degisti(); } });
+        s.querySelectorAll('[data-be]').forEach(b => b.onclick = () => { uzKaydet(); degisti(); boslukSayfasi(i, null, b.dataset.be); });
+        s.querySelectorAll('[data-bd]').forEach(b => b.onclick = () => { uzKaydet(); degisti(); boslukSayfasi(i, pl.bosluk.find(x => x.id === b.dataset.bd)); });
+      });
+  }
+  function boslukSayfasi(i, b, tur0) {
+    let tur = b ? b.tur : tur0;
+    const varsayYuk = { kapi: 2.10, balkon: 2.10, pencere: null, aciklik: null };
+    const html = () => `${sayfaBas((b ? 'Boşluğu düzenle' : 'Boşluk ekle') + ' · Duvar ' + (i + 1))}
+      <div class="cipler">${['kapi', 'pencere', 'balkon', 'aciklik'].map(t => `<button type="button" class="cip" data-t="${t}" aria-pressed="${t === tur}">${esc(BOSLUK_TUR[t].ad)}</button>`).join('')}</div>
+      <div class="izgara2">
+        <label class="alan" for="b-gen"><span class="not-kucuk">GENİŞLİK (cm)</span><input id="b-gen" type="text" inputmode="decimal" autocomplete="off" value="${b && b.gen != null ? esc(cmG(b.gen)) : ''}" placeholder="Örn. 90"></label>
+        <label class="alan" for="b-yuk"><span class="not-kucuk">YÜKSEKLİK (cm)</span><input id="b-yuk" type="text" inputmode="decimal" autocomplete="off" value="${b && b.yuk != null ? esc(cmG(b.yuk)) : (varsayYuk[tur] ? esc(cmG(varsayYuk[tur])) : '')}" placeholder="Örn. 210"></label>
+      </div>
+      <label class="onay"><input type="checkbox" id="b-boya" ${(b ? (b.kapiBoya != null ? b.kapiBoya : (tur === 'kapi' || tur === 'balkon')) : (tur === 'kapi' || tur === 'balkon')) ? 'checked' : ''}><span>${tur === 'pencere' ? 'Pencere doğraması boyanacak' : tur === 'aciklik' ? 'Kasa/pervaz boyanacak' : 'Kapı boyanacak'}</span></label>
+      ${b ? `<button type="button" class="btn btn-kirmizi btn-kucuk" data-bsil="1">${ikon('sil', 20)} BOŞLUĞU SİL</button>` : ''}
+      <button type="button" class="btn btn-siyah" data-bk="1">KAYDET</button>`;
+    const kur = s => {
+      s.querySelector('[data-kapat]').onclick = () => kenarSayfasi(i);
+      s.querySelectorAll('[data-t]').forEach(c => c.onclick = () => { const g = s.querySelector('#b-gen').value, y = s.querySelector('#b-yuk').value; tur = c.dataset.t; sayfaAc(html(), kur); s = document.querySelector('#sayfa-kok .sayfa'); s.querySelector('#b-gen').value = g; if (y) s.querySelector('#b-yuk').value = y; });
+      setTimeout(() => { const g = s.querySelector('#b-gen'); if (g && !g.value) try { g.focus(); } catch (e) {} }, 60);
+      const sl = s.querySelector('[data-bsil]');
+      if (sl) sl.onclick = () => { not(); pl.bosluk = pl.bosluk.filter(x => x.id !== b.id); degisti(); kenarSayfasi(i); };
+      s.querySelector('[data-bk]').onclick = () => {
+        const sayfa = document.querySelector('#sayfa-kok .sayfa');
+        const gen = cmOku(sayfa.querySelector('#b-gen').value), yuk = cmOku(sayfa.querySelector('#b-yuk').value);
+        if (gen == null) { bildir('Genişliği yaz (cm)', true); return; }
+        const kapiBoya = !!sayfa.querySelector('#b-boya').checked;
+        not();
+        if (b) pl.bosluk = pl.bosluk.map(x => x.id === b.id ? { ...x, tur, gen, yuk, kapiBoya } : x);
+        else pl.bosluk.push({ id: 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kenar: i, tur, gen, yuk, kapiBoya });
+        degisti();
+        kenarSayfasi(i);
+      };
+    };
+    sayfaAc(html(), kur);
+  }
+  function yukseklikSayfasi() {
+    const m = mh(); if (!m) return;
+    sayfaAc(`${sayfaBas('Tavan yüksekliği')}
+      <label class="alan" for="p-h"><span class="etiket">Yükseklik (cm)</span><input id="p-h" type="text" inputmode="decimal" autocomplete="off" value="${m.h != null ? esc(cmG(m.h)) : ''}" placeholder="Örn. 255"></label>
+      <button type="button" class="btn btn-siyah" data-hk="1">KAYDET</button>`,
+      s => {
+        s.querySelector('[data-kapat]').onclick = sayfaKapat;
+        const inp = s.querySelector('#p-h');
+        setTimeout(() => { try { inp.focus(); } catch (e) {} }, 60);
+        const yaz = () => {
+          const i = S.mahaller.findIndex(x => x.id === mid); if (i < 0) return;
+          S.mahaller[i] = { ...S.mahaller[i], h: cmOku(inp.value) };
+          kaydetPlan(); sayfaKapat(); cizBilgi();
+        };
+        s.querySelector('[data-hk]').onclick = yaz;
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); yaz(); } });
+      });
+  }
+  function menu() {
+    sayfaAc(`${sayfaBas('Plan')}
+      ${pl.kapali ? `<button type="button" class="btn btn-kucuk" data-ac="1">PLANI AÇ (KÖŞE EKLE/ÇIKAR)</button>` : ''}
+      <button type="button" class="btn btn-kirmizi btn-kucuk" data-temizle="1">${ikon('sil', 20)} PLANI BAŞTAN ÇİZ</button>
+      <p class="not-kucuk" style="margin:0;line-height:1.45">Köşeler kendiliğinden 90° olur. Açılı duvarlı mahallerde (merdiven, çatı arası) duvarı fotoğraf/kroki sayfasında ayrı ölçüyle gir.</p>`,
+      s => {
+        s.querySelector('[data-kapat]').onclick = sayfaKapat;
+        const a = s.querySelector('[data-ac]');
+        if (a) a.onclick = () => { not(); pl.kapali = false; sayfaKapat(); degisti(); bildir('Plan açıldı: son köşeyi Geri al ile silebilir, yeni köşe ekleyebilirsin.'); };
+        s.querySelector('[data-temizle]').onclick = async () => {
+          if (!(await onayIste('Plan, ölçüler ve plandaki kapı/pencereler silinecek.', 'BAŞTAN ÇİZ'))) return;
+          not(); pl = { kose: [], kenar: [], bosluk: [], kapali: false }; degisti();
+        };
+      });
+  }
+  return { ac, kapat };
+})();
+
+/* ===== DXF (R12, cm, cp1254): planı çizilmiş mahaller yan yana ===== */
+const CP1254 = { 'Ç': 0xC7, 'ç': 0xE7, 'Ğ': 0xD0, 'ğ': 0xF0, 'İ': 0xDD, 'ı': 0xFD, 'Ö': 0xD6, 'ö': 0xF6, 'Ş': 0xDE, 'ş': 0xFE, 'Ü': 0xDC, 'ü': 0xFC, '²': 0xB2, '×': 0xD7, '·': 0xB7 };
+function cp1254Bayt(s) { const o = []; for (const ch of s) { const c = ch.charCodeAt(0); o.push(c < 128 ? c : (CP1254[ch] != null ? CP1254[ch] : 0x3F)); } return new Uint8Array(o); }
+function dxfOlustur(p) {
+  const L = [];
+  const g = (c, v) => { L.push(String(c)); L.push(typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(3)) : String(v)); };
+  g(0, 'SECTION'); g(2, 'HEADER'); g(9, '$ACADVER'); g(1, 'AC1009'); g(9, '$DWGCODEPAGE'); g(3, 'ANSI_1254'); g(9, '$INSBASE'); g(10, 0); g(20, 0); g(30, 0); g(0, 'ENDSEC');
+  g(0, 'SECTION'); g(2, 'TABLES');
+  g(0, 'TABLE'); g(2, 'LTYPE'); g(70, 1); g(0, 'LTYPE'); g(2, 'CONTINUOUS'); g(70, 0); g(3, 'Solid line'); g(72, 65); g(73, 0); g(40, 0.0); g(0, 'ENDTAB');
+  const katman = [['DUVAR', 7], ['OLCU', 3], ['YAZI', 7], ['BOSLUK', 1], ['NOT', 8]];
+  g(0, 'TABLE'); g(2, 'LAYER'); g(70, katman.length); katman.forEach(([a, c]) => { g(0, 'LAYER'); g(2, a); g(70, 0); g(62, c); g(6, 'CONTINUOUS'); }); g(0, 'ENDTAB');
+  g(0, 'TABLE'); g(2, 'STYLE'); g(70, 1); g(0, 'STYLE'); g(2, 'STANDARD'); g(70, 0); g(40, 0.0); g(41, 1.0); g(50, 0.0); g(71, 0); g(42, 2.5); g(3, 'txt'); g(4, ''); g(0, 'ENDTAB');
+  g(0, 'ENDSEC');
+  g(0, 'SECTION'); g(2, 'ENTITIES');
+  const cizgi = (ly, x1, y1, x2, y2) => { g(0, 'LINE'); g(8, ly); g(10, x1); g(20, y1); g(30, 0); g(11, x2); g(21, y2); g(31, 0); };
+  const yazi = (ly, x, y, h, t, aci = 0) => { g(0, 'TEXT'); g(8, ly); g(10, x); g(20, y); g(30, 0); g(40, h); g(1, t); if (aci) g(50, aci); g(72, 4); g(11, x); g(21, y); g(31, 0); };
+  let ofset = 0, sayac = 0, enAltY = 0;
+  mahalSirali().forEach(m => {
+    const pm = planMetraj(m);
+    if (!pm || !pm.koseM) return;
+    sayac++;
+    const P = pm.koseM.map(q => [q[0] * 100, -q[1] * 100]);
+    const minX = Math.min(...P.map(q => q[0])), maxX = Math.max(...P.map(q => q[0])), maxY = Math.max(...P.map(q => q[1]));
+    const dx = ofset - minX + 60;
+    const Q = P.map(q => [q[0] + dx, q[1] - maxY]);
+    const n = Q.length;
+    enAltY = Math.min(enAltY, ...Q.map(q => q[1]));
+    let sa = 0, cx = 0, cy = 0;
+    for (let i = 0; i < n; i++) { const a = Q[i], b = Q[(i + 1) % n], cr = a[0] * b[1] - b[0] * a[1]; sa += cr; cx += (a[0] + b[0]) * cr; cy += (a[1] + b[1]) * cr; }
+    const A = sa / 2; cx /= (6 * A); cy /= (6 * A);
+    for (let i = 0; i < n; i++) {
+      const a = Q[i], b = Q[(i + 1) % n];
+      cizgi('DUVAR', a[0], a[1], b[0], b[1]);
+      const Lk = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, ux = (b[0] - a[0]) / Lk, uy = (b[1] - a[1]) / Lk;
+      let nx = uy, ny = -ux; if (A < 0) { nx = -nx; ny = -ny; }
+      const d = 40;
+      const a2 = [a[0] + nx * d, a[1] + ny * d], b2 = [b[0] + nx * d, b[1] + ny * d];
+      cizgi('OLCU', a2[0], a2[1], b2[0], b2[1]);
+      cizgi('OLCU', a[0] + nx * 5, a[1] + ny * 5, a[0] + nx * (d + 6), a[1] + ny * (d + 6));
+      cizgi('OLCU', b[0] + nx * 5, b[1] + ny * 5, b[0] + nx * (d + 6), b[1] + ny * (d + 6));
+      [a2, b2].forEach(q => cizgi('OLCU', q[0] - (ux + nx) * 4, q[1] - (uy + ny) * 4, q[0] + (ux + nx) * 4, q[1] + (uy + ny) * 4));
+      let aci = Math.atan2(uy, ux) * 180 / Math.PI; if (aci > 90.1) aci -= 180; if (aci <= -90.1) aci += 180;
+      const kn = pm.kenar[i];
+      yazi('OLCU', (a2[0] + b2[0]) / 2 + nx * 9, (a2[1] + b2[1]) / 2 + ny * 9, 10, (kn && kn.tahmini ? '~' : '') + String(Math.round(Lk)), Math.round(aci));
+      const bl = pm.bosluklar.filter(x => x.kenar === i);
+      bl.forEach((x, j) => {
+        const t = (j + 1) / (bl.length + 1);
+        const px = a[0] + (b[0] - a[0]) * t - nx * 22, py = a[1] + (b[1] - a[1]) * t - ny * 22;
+        yazi('BOSLUK', px, py, 8, `${x.kod} ${cmYaz(x.gen)}×${cmYaz(x.yuk)}`, Math.round(aci));
+      });
+    }
+    yazi('YAZI', cx, cy + 22, 14, m.ad);
+    yazi('YAZI', cx, cy, 10, `A = ${fmt(pm.alan)} m²`);
+    yazi('YAZI', cx, cy - 18, 10, m.h != null ? `h = ${cmYaz(m.h)}` : 'h = ?');
+    ofset = maxX + dx + 200;
+  });
+  if (sayac) yazi('NOT', Math.max(ofset - 200, 120) / 2, enAltY - 130, 8, `${(p && p.ad) || 'Keşif'} · ${bugunMetni()} · birim: cm · iç ölçü · ABM Keşif ve Metraj`);
+  g(0, 'ENDSEC'); g(0, 'EOF');
+  return { metin: L.join('\r\n') + '\r\n', sayac };
+}
+
 /* ===== Mahal notları: yazı + elle detay çizimi (mahal belgesinde saklanır) ===== */
 const NotPanel = (() => {
   const DW = 1200, DH = 800;            // çizim alanının iç ölçüsü (3:2)
@@ -1933,6 +2352,26 @@ function metrajHesapla() {
     const duvarBosluk = bosluklar.filter(b => b.duvar);
     const dus = duvarBosluk.filter(b => b.dusBoya !== false && b.gen != null && b.yuk != null).reduce((a, b) => a + b.gen * b.yuk, 0);
     const kalemler = [];
+    const pm = planMetraj(m);
+    if (pm) {
+      bosluklar.length = 0; pm.bosluklar.forEach(b => bosluklar.push(b));
+      const dusP = pm.bosluklar.filter(b => b.gen != null && b.yuk != null).reduce((a, b) => a + b.gen * b.yuk, 0);
+      const kStr = pm.kenar.map(x => fmt(x.uz)).join('+');
+      if (m.h != null) {
+        const net = pm.cevre * m.h - dusP;
+        kalemler.push({ kalem: 'Duvar alanı (net)', hesap: `(${kStr})×${fmt(m.h)}` + (dusP ? ` − boşluk ${fmt(dusP)}` : ''), miktar: net, birim: 'm²' });
+        toplam.duvarNet += net;
+      } else kalemler.push({ kalem: 'Duvar alanı', hesap: 'yükseklik girilmedi', miktar: null, birim: 'm²' });
+      kalemler.push({ kalem: 'Tavan alanı', hesap: 'plandan', miktar: pm.alan, birim: 'm²' });
+      kalemler.push({ kalem: 'Zemin alanı', hesap: 'plandan', miktar: pm.alan, birim: 'm²' });
+      toplam.tavan += pm.alan; toplam.zemin += pm.alan;
+      const kesen = pm.bosluklar.filter(b => b.tur !== 'pencere' && b.gen != null).reduce((x, b) => x + b.gen, 0);
+      const sup = pm.cevre - kesen;
+      kalemler.push({ kalem: 'Süpürgelik', hesap: `çevre ${fmt(pm.cevre)}${kesen ? ' − kapı/açıklık ' + fmt(kesen) : ''}`, miktar: sup, birim: 'mt' });
+      toplam.supurgelik += sup;
+      const uy = pm.uyarilar.concat(pm.tahminVar ? ['Bazı kenar ölçüleri girilmedi, çizimden tahmin edildi.'] : []);
+      if (uy.length) kalemler.push({ kalem: 'UYARI', hesap: uy.join(' '), miktar: null, birim: '' });
+    } else {
     let brut = null, hesap = '';
     // Aynı duvarın birden fazla sayfası olabilir (foto + kroki): her duvar bir kez, ölçülü ilk sayfadan
     const duvarHarita = new Map();
@@ -1981,6 +2420,7 @@ function metrajHesapla() {
         if (f.yuzey === 'Tavan') toplam.tavan += a; else toplam.zemin += a;
       });
     }
+    }
     const bListe = l => l.map(b => `${b.kod || ''} ${b.gen != null ? fmt(b.gen) : '?'}×${b.yuk != null ? fmt(b.yuk) : '?'}`).join(', ');
     ['kapi', 'pencere', 'balkon', 'aciklik'].forEach(t => {
       const l = bosluklar.filter(b => b.tur === t);
@@ -2019,11 +2459,17 @@ function cizOzet(k) {
           ${s.kalemler.length ? s.kalemler.map(x => `<tr><td>${esc(x.kalem)}</td><td style="color:var(--gri);font-size:13px">${esc(x.hesap)}</td><td class="sayi"><b>${x.birim === 'adet' ? x.miktar : fmt(x.miktar)}</b> ${esc(x.birim)}</td></tr>`).join('') : `<tr><td colspan="3" style="color:var(--gri)">Ölçü girilmedi</td></tr>`}
           ${s.not ? `<tr><td>Notlar</td><td colspan="2" style="white-space:pre-wrap;font-size:14px">${esc(s.not)}</td></tr>` : ''}`).join('')}
         </tbody></table></div>` : `<div class="bos">Henüz mahal yok.</div>`}
-      <p class="not-kucuk" style="margin:0;line-height:1.45">Mahal notları tabloda ve CSV'de mahalin altında çıkar; detay çizimleri uygulamada kalır. Duvar alanı mahal ölçüsünden (çevre × yükseklik) hesaplanır. Bir duvara ayrı ölçü girildiyse (eğimli merdiven duvarı, farklı genişlik) o duvar kendi ölçüsüyle hesaplanır; Duvar 5 ve sonrası eklenir. Mahal ölçüsü yoksa duvarlar tek tek toplanır. Düşülen boşluklar sadece foto/kroki üzerine girilen kapı ve pencerelerdir. İki odanın ortak kapısı her iki odada girilirse kapı boyası iki kez sayılır.</p>
+      <p class="not-kucuk" style="margin:0;line-height:1.45">Planı çizilen mahalde alan, çevre, duvar ve süpürgelik plandan hesaplanır; düşülen boşluklar plandaki kapı/pencere/açıklıklardır. Mahal notları tabloda ve CSV'de mahalin altında çıkar; detay çizimleri uygulamada kalır. Duvar alanı mahal ölçüsünden (çevre × yükseklik) hesaplanır. Bir duvara ayrı ölçü girildiyse (eğimli merdiven duvarı, farklı genişlik) o duvar kendi ölçüsüyle hesaplanır; Duvar 5 ve sonrası eklenir. Mahal ölçüsü yoksa duvarlar tek tek toplanır. Düşülen boşluklar sadece foto/kroki üzerine girilen kapı ve pencerelerdir. İki odanın ortak kapısı her iki odada girilirse kapı boyası iki kez sayılır.</p>
     </div>
-    <div class="alt"><button type="button" class="btn btn-sari" data-csv="1">${ikon('indir', 24)} TABLOYU İNDİR (CSV)</button></div>`;
+    <div class="alt" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><button type="button" class="btn btn-sari" data-csv="1">${ikon('indir', 24)} TABLO (CSV)</button><button type="button" class="btn btn-siyah" data-dxf="1">${ikon('indir', 24)} PLAN (DXF)</button></div>`;
   k.querySelector('[data-geri]').onclick = () => git('proje');
   k.querySelector('[data-csv]').onclick = () => csvIndir(p, satirlar);
+  k.querySelector('[data-dxf]').onclick = () => {
+    const d = dxfOlustur(p);
+    if (!d.sayac) { bildir('Planı kapatılmış ve ölçüsü girilmiş mahal yok', true); return; }
+    const ad = ((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60) + ' - plan.dxf';
+    dosyaVer(ad, new Blob([cp1254Bayt(d.metin)], { type: 'application/dxf' }), 'Plan çizimi (DXF)', `${d.sayac} mahal · birim cm · AutoCAD'de açılır.`);
+  };
 }
 
 /* ===== Dosya verme: Paylaş menüsü (Drive vb.) ya da İndirilenler ===== */
@@ -2107,7 +2553,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v9', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v10', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
