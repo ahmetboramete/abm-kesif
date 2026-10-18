@@ -2049,7 +2049,11 @@ function dosyaVer(ad, blob, baslik, aciklama) {
       const p = el.querySelector('[data-paylas]');
       if (p) p.onclick = async () => {
         try { await navigator.share({ files: [new File([blob], ad, { type: blob.type })], title: ad }); sayfaKapat(); bildir('Paylaşıldı'); }
-        catch (e) { if (!e || e.name !== 'AbortError') bildir('Paylaşılamadı. İndir düğmesini kullan.', true); }
+        catch (e) {
+          if (e && e.name === 'AbortError') return;
+          dosyaIndir(ad, blob); sayfaKapat();
+          bildir('Paylaşılamadı (' + ((e && (e.name || e.message)) || 'bilinmeyen') + '). Dosya İndirilenler\'e kaydedildi.', true);
+        }
       };
       el.querySelector('[data-indir]').onclick = () => { dosyaIndir(ad, blob); sayfaKapat(); bildir('İndirilenler klasörüne kaydedildi'); };
     });
