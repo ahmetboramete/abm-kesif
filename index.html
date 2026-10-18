@@ -1,4 +1,4 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121212"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="ikon-192.png"><link rel="apple-touch-icon" href="ikon-192.png"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121212"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="ikon-192.png"><link rel="apple-touch-icon" href="ikon-192.png"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>ABM Keşif ve Metraj</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
 <style>
@@ -145,6 +145,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .ipucu{position:absolute;left:10px;top:10px;right:64px;background:rgba(18,18,18,.82);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;z-index:2;pointer-events:none}
 .plan-sahne{flex-grow:1;position:relative;overflow:hidden;background:#2A2A27;touch-action:none;user-select:none;-webkit-user-select:none}
 .plan-sahne svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.olcu-panel{flex-shrink:0;background:var(--card);border-top:3px solid var(--ink);padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.olcu-panel .op-ust{display:grid;grid-template-columns:auto minmax(0,1fr) 84px;gap:8px;align-items:center}
+.olcu-panel .op-ust b{font-family:var(--f-baslik);font-weight:700;font-size:24px;white-space:nowrap}
+.olcu-panel input{min-height:56px;border:3px solid var(--sari);background:var(--sari-acik);border-radius:8px;padding:0 12px;font-family:var(--f-baslik);font-weight:700;font-size:30px;width:100%}
+.olcu-panel .op-tamam{min-height:56px;font-size:30px;padding:0}
+.olcu-panel .op-alt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .serit .plan-kucuk{background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-baslik);font-weight:700;font-size:13px;color:var(--ink);padding:2px}
 /* ozet */
 .tablo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--card);border:2px solid var(--ink);border-radius:10px;overflow:hidden}
@@ -631,7 +637,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v11</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v12</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -1063,7 +1069,7 @@ function planMiniSvg(pl, boy = 44) {
 }
 
 const Plan = (() => {
-  let k = null, mid = null, pl = null, gecmis = [], el = {}, arac = 'kalem', iz = null, kalemGoruldu = false;
+  let k = null, mid = null, pl = null, gecmis = [], el = {}, arac = 'kalem', iz = null, kalemGoruldu = false, aktif = null, opBas = null;
   const mh = () => mahal(mid);
   function yukle() {
     const x = mh();
@@ -1106,17 +1112,28 @@ const Plan = (() => {
         <div class="ipucu" data-ipucu="1"></div>
         <svg data-svg="1" viewBox="0 0 ${PLAN_W} ${PLAN_H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mahal planı"></svg>
       </div>
+      <div class="olcu-panel" data-opanel="1" hidden>
+        <div class="op-ust"><b data-op-ad="1">Duvar 1</b><input id="op-uz" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="cm"><button type="button" class="btn btn-siyah op-tamam" data-op-tamam="1" aria-label="Ölçüyü gir, sonraki kenar">✓</button></div>
+        <div class="op-alt"><button type="button" class="btn btn-kucuk" data-op-atla="1">ATLA</button><button type="button" class="btn btn-kucuk" data-op-bosluk="1">KAPI / PENCERE</button><button type="button" class="btn btn-kucuk" data-op-bitti="1">ŞERİDİ KAPAT</button></div>
+        <span class="not-kucuk" data-op-not="1"></span>
+      </div>
       <div class="bilgi" data-bilgi="1"></div>
       <div class="alt" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
         <button type="button" class="btn" data-yukseklik="1">YÜKSEKLİK</button>
         <button type="button" class="btn btn-siyah" data-bitti="1">BİTTİ</button>
       </div>`;
-    el = { svg: k.querySelector('[data-svg]'), bilgi: k.querySelector('[data-bilgi]'), ipucu: k.querySelector('[data-ipucu]'), alt: k.querySelector('[data-plan-alt]'), yuk: k.querySelector('[data-yukseklik]') };
+    el = { op: k.querySelector('[data-opanel]'), opUz: k.querySelector('#op-uz'), opAd: k.querySelector('[data-op-ad]'), opNot: k.querySelector('[data-op-not]'), svg: k.querySelector('[data-svg]'), bilgi: k.querySelector('[data-bilgi]'), ipucu: k.querySelector('[data-ipucu]'), alt: k.querySelector('[data-plan-alt]'), yuk: k.querySelector('[data-yukseklik]') };
     k.querySelector('[data-geri]').onclick = () => git('proje');
     k.querySelector('[data-bitti]').onclick = () => git('proje');
     k.querySelector('[data-geri-al]').onclick = geriAl;
     k.querySelector('[data-plan-menu]').onclick = menu;
     el.yuk.onclick = () => yukseklikSayfasi();
+    aktif = null;
+    k.querySelector('[data-op-tamam]').onclick = () => opIlerle(true);
+    k.querySelector('[data-op-atla]').onclick = () => opIlerle(false);
+    k.querySelector('[data-op-bitti]').onclick = () => { opKaydet(); opKapat(); };
+    k.querySelector('[data-op-bosluk]').onclick = () => { const i = aktif; opKaydet(); opKapat(); if (i != null) kenarSayfasi(i); };
+    el.opUz.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); opIlerle(true); } });
     k.querySelectorAll('[data-parac]').forEach(b => b.onclick = () => { arac = b.dataset.parac; cizBilgi(); });
     el.svg.addEventListener('pointerdown', basla);
     el.svg.addEventListener('pointermove', surukle);
@@ -1139,12 +1156,14 @@ const Plan = (() => {
   function surukle(e) {
     if (!iz || iz.id !== e.pointerId || iz.avuc) return;
     const p = svgNok(e), son = iz.pts[iz.pts.length - 1];
+    iz.maks = Math.max(iz.maks || 0, Math.hypot(e.clientX - iz.x0, e.clientY - iz.y0));
     if (uzak(p, son) > 2) { iz.pts.push(p); canliCiz(); }
   }
   function bitir(e) {
     if (!iz || iz.id !== e.pointerId) return;
     const z = iz; iz = null;
-    const tasindi = Math.hypot(e.clientX - z.x0, e.clientY - z.y0) > 12;
+    // kapalı bir şekil çizilince bitiş noktası başlangıca döner: en uzak sapmaya bak
+    const tasindi = Math.max(z.maks || 0, Math.hypot(e.clientX - z.x0, e.clientY - z.y0)) > 12;
     if (!tasindi) {
       // avuç/parmak: kalem kullanılıyorsa sadece kapalı planda kenar seçmeye yarar
       if (z.avuc && !pl.kapali) { canliCiz(); return; }
@@ -1261,6 +1280,7 @@ const Plan = (() => {
     degisti();
   }
   function silgiUygula(pts) {
+    if (aktif != null) opKapat();
     const K = pl.kose;
     if (!K.length) return;
     let hit = null;
@@ -1322,8 +1342,41 @@ const Plan = (() => {
       return;
     }
     const i = kenarBul(p);
-    if (i != null) kenarSayfasi(i);
+    if (i != null) { if (aktif != null) opKaydet(); opAc(i); }
   }
+  // Ölçü şeridi: yaz → ✓ → sonraki kenar
+  function opAc(i, ilk) {
+    const c = planCoz(pl), kn = c && c.kenar[i];
+    if (!kn) return;
+    aktif = i;
+    if (ilk || opBas == null) opBas = i;
+    el.op.hidden = false;
+    el.opAd.textContent = 'Duvar ' + (i + 1);
+    el.opUz.value = kn.girilen ? cmG(kn.uz) : '';
+    el.opUz.placeholder = kn.turetilmis ? 'boş: ' + cmYaz(kn.uz) + ' hesaplanır' : 'cm';
+    const bl = pl.bosluk.filter(x => x.kenar === i).length;
+    el.opNot.textContent = (kn.turetilmis ? 'Bu kenar diğer ölçülerden hesaplanıyor; ölçtüysen yaz, değilse ATLA. ' : '') + (bl ? bl + ' boşluk var. ' : '') + 'Klavyedeki İleri tuşu da ✓ gibi çalışır.';
+    cizSvg();
+    setTimeout(() => { try { el.opUz.focus(); el.opUz.select(); } catch (e) {} }, 30);
+  }
+  function opKaydet() {
+    if (aktif == null) return;
+    const txt = el.opUz.value.trim();
+    if (!txt) return; // boş: değişiklik yok (ölçüyü silmek için kenar panelini kullan)
+    const v = cmOku(txt), i = aktif, eski = (pl.kenar[i] && pl.kenar[i].uz) || null;
+    if (!(v > 0) || v === eski) return;
+    not(); while (pl.kenar.length <= i) pl.kenar.push({});
+    pl.kenar[i] = { ...(pl.kenar[i] || {}), uz: v };
+    kaydetPlan(); cizBilgi();
+  }
+  function opIlerle(kaydetsin) {
+    if (aktif == null) return;
+    if (kaydetsin) opKaydet();
+    const n = pl.kose.length, sonraki = (aktif + 1) % n;
+    if (sonraki === opBas) { opKapat(); const c = planCoz(pl); bildir(c && !c.tahminVar && !c.uyarilar.length ? 'Ölçüler tamam' : 'Tur bitti. Eksik ya da tutmayan ölçü varsa kenara dokunup düzelt.', !!(c && (c.tahminVar || c.uyarilar.length))); return; }
+    opAc(sonraki);
+  }
+  function opKapat() { aktif = null; opBas = null; if (el.op) el.op.hidden = true; try { el.opUz.blur(); } catch (e) {} cizSvg(); cizBilgi(); }
   function kapatPlan() { not(); kapatIc(); }
   function kapatIc() {
     const K = pl.kose, n = K.length, ilk = K[0], son = K[n - 1];
@@ -1336,7 +1389,8 @@ const Plan = (() => {
     pl.kapali = true;
     duzenle();
     degisti();
-    bildir('Plan kapandı. Şimdi her kenara dokunup ölçüsünü gir.');
+    bildir('Plan kapandı. Ölçüyü yaz, ✓ ile sonraki kenara geç.');
+    opBas = null; opAc(0, true);
   }
   // Kapalı planda sıra: saat yönünde, Duvar 1 sol üst köşeden başlayan kenar (ölçü/boşluk indeksleri taşınır)
   function duzenle() {
@@ -1370,6 +1424,7 @@ const Plan = (() => {
     return enD < tol * 1.6 ? en : null;
   }
   function geriAl() {
+    if (aktif != null) { aktif = null; opBas = null; el.op.hidden = true; }
     if (!gecmis.length) { bildir('Geri alınacak bir şey yok'); return; }
     pl = JSON.parse(gecmis.pop());
     degisti();
@@ -1410,6 +1465,10 @@ const Plan = (() => {
         s += `<text x="${px - nx * 50}" y="${py - ny * 50 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#121212">${esc((BOSLUK_TUR[x.tur] || {}).kod || '')}</text>`;
       });
     });
+    if (aktif != null && pl.kapali && K.length > 1) {
+      const a = K[aktif], b = K[(aktif + 1) % n];
+      if (a && b) s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#FFC20E" stroke-width="20" stroke-linecap="round" opacity=".85"/>`;
+    }
     K.forEach((p, i) => {
       const ilkAcik = !pl.kapali && i === 0 && n >= 3;
       s += `<circle cx="${p[0]}" cy="${p[1]}" r="${ilkAcik ? 16 : 8}" fill="${ilkAcik ? '#FFC20E' : '#121212'}" stroke="#121212" stroke-width="3"/>`;
@@ -2750,7 +2809,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v11', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v12', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
