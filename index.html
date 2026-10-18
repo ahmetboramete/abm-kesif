@@ -1,0 +1,2182 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121212"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="ikon-192.png"><link rel="apple-touch-icon" href="ikon-192.png"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ABM Keşif ve Metraj</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ink:#121212; --bg:#F4F4F1; --card:#FFFFFF; --sari:#FFC20E; --sari-acik:#FFFBEA;
+  --gri:#4A4A46; --gri-acik:#8A8A84; --cizgi:#D9D9D3; --kirmizi:#B3261E; --kirmizi-acik:#FF8A80;
+  --koyu-cizgi:#5A5A55;
+  --f-govde:'Barlow','Helvetica Neue',Arial,sans-serif;
+  --f-baslik:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-govde);font-size:16px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--sari);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;max-width:1400px;margin:0 auto;background:var(--bg);position:relative;overflow:hidden}
+.bas{background:var(--ink);color:#fff;padding:0 8px;min-height:64px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.bas .baslik{flex-grow:1;display:flex;flex-direction:column;min-width:0}
+.bas .baslik b{font-family:var(--f-baslik);font-weight:700;font-size:23px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bas .baslik span{font-size:13px;color:#C9C9C2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ikon-btn{width:48px;height:48px;border:0;background:transparent;color:inherit;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0}
+.ikon-btn:active{background:rgba(255,255,255,.12)}
+.ikon-btn:disabled{opacity:.35}
+.govde{flex-grow:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.alt{flex-shrink:0;padding:10px 12px calc(14px + env(safe-area-inset-bottom,0px));border-top:2px solid var(--ink);background:var(--bg);display:grid;gap:10px}
+.btn{min-height:56px;border:2px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);font-family:var(--f-baslik);font-weight:700;font-size:20px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;text-transform:uppercase}
+.btn:active{transform:translateY(1px)}
+.btn-sari{background:var(--sari)}
+.btn-siyah{background:var(--ink);color:var(--sari)}
+.btn-kirmizi{background:var(--card);color:var(--kirmizi);border-color:var(--kirmizi)}
+.btn-kucuk{min-height:44px;font-size:16px}
+.kart{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.kart-bas{display:flex;align-items:center;gap:8px;min-height:32px}
+.kart-bas b{font-family:var(--f-baslik);font-weight:700;font-size:22px}
+.kart-bas .olcu{flex-grow:1;font-size:14px;color:var(--gri);font-variant-numeric:tabular-nums}
+.serit{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.serit .kucuk{height:48px;border-radius:5px;overflow:hidden;border:0;padding:0;background:#ddd;position:relative}
+.serit .kucuk img{width:100%;height:100%;object-fit:cover;display:block}
+.serit .kucuk i{position:absolute;left:2px;bottom:2px;background:var(--ink);color:var(--sari);font-style:normal;font-family:var(--f-baslik);font-weight:700;font-size:12px;padding:0 4px;border-radius:3px}
+.serit .ekle{border:2px dashed var(--ink);background:transparent;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.serit .kroki-kucuk{background-color:#fff;background-image:linear-gradient(#D9D9D3 1px,transparent 1px),linear-gradient(90deg,#D9D9D3 1px,transparent 1px);background-size:8px 8px;border:2px solid var(--ink)}
+.katman.kroki{background-color:#fff;background-image:linear-gradient(#E4E4DE 2px,transparent 2px),linear-gradient(90deg,#E4E4DE 2px,transparent 2px),linear-gradient(#F0F0EC 1px,transparent 1px),linear-gradient(90deg,#F0F0EC 1px,transparent 1px);background-size:100px 100px,100px 100px,20px 20px,20px 20px}
+.kroki-onizleme{width:100%;height:110px;border-radius:8px;border:2px solid var(--ink);background-color:#fff;background-image:linear-gradient(#E4E4DE 1px,transparent 1px),linear-gradient(90deg,#E4E4DE 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center;font-family:var(--f-baslik);font-weight:700;font-size:20px;color:var(--gri)}
+.tus-panel{position:absolute;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:3px solid var(--ink);border-radius:14px 14px 0 0;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;box-shadow:0 -6px 24px rgba(0,0,0,.25)}
+.tus-ust{display:flex;align-items:center;gap:8px}
+.tus-ust .tus-baslik{flex-grow:1;font-family:var(--f-baslik);font-weight:700;font-size:20px;text-transform:uppercase}
+.tus-turler{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tus-turler .cip{justify-content:center;padding:0 4px;font-size:15px;min-height:42px}
+.tus-ekran{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border:2px solid var(--ink);border-radius:10px;background:var(--sari-acik);padding:4px 14px;min-height:62px}
+.tus-ekran b{font-family:var(--f-baslik);font-weight:700;font-size:40px;font-variant-numeric:tabular-nums;line-height:1.2}
+.tus-ekran b small{font-size:20px;color:var(--gri);margin-left:4px}
+.tus-ekran span{font-size:16px;font-weight:600;color:var(--gri);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tus-son{display:flex;gap:6px;overflow-x:auto;min-height:40px}
+.tus-son .cip{min-height:40px;font-size:15px;padding:0 10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tus-izgara{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tus{height:56px;border:2px solid var(--ink);border-radius:10px;background:var(--card);font-family:var(--f-baslik);font-weight:700;font-size:30px;display:flex;align-items:center;justify-content:center;padding:0;touch-action:manipulation}
+.tus:active{background:var(--sari)}
+.tus-tamam{background:var(--ink);color:var(--sari);font-size:22px}
+.tus-tamam:disabled{opacity:.35}
+@media (orientation:landscape) and (min-width:700px){
+  .tus-panel{left:auto;top:64px;width:380px;border-top:0;border-left:3px solid var(--ink);border-radius:0;overflow-y:auto;box-shadow:-6px 0 24px rgba(0,0,0,.25)}
+  .tus{height:64px}
+}
+@media (max-height:640px){ .tus{height:46px;font-size:24px} .tus-ekran b{font-size:32px} }
+/* mahal not paneli: yazı + elle çizim */
+.orta{flex-grow:1;display:flex;min-height:0;position:relative}
+.orta .sahne{flex-grow:1;min-width:0}
+.mnot{width:360px;flex-shrink:0;border-left:3px solid var(--ink);background:var(--card);display:flex;flex-direction:column;min-height:0}
+@media (max-width:899px),(orientation:portrait){
+  .mnot{position:absolute;left:0;right:0;bottom:0;width:auto;height:64%;border-left:0;border-top:3px solid var(--ink);border-radius:14px 14px 0 0;z-index:12;box-shadow:0 -6px 24px rgba(0,0,0,.25)}
+}
+.mnot.tam{position:absolute;inset:0;width:auto;height:auto;z-index:14;border:0;border-radius:0;box-shadow:none}
+.mnot.gomulu{position:static;width:auto;height:auto;border:0;border-radius:0;box-shadow:none;min-height:70vh}
+.mnot-bas{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 10px;border-bottom:2px solid var(--ink);flex-shrink:0}
+.mnot-bas .mnot-ad{flex-grow:1;min-width:0;font-family:var(--f-baslik);font-weight:700;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mnot-bas .ikon-btn{width:44px;height:44px}
+.mnot-sekme{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px 0;flex-shrink:0}
+.mnot-sekme .cip{justify-content:center}
+.mnot-govde{flex-grow:1;min-height:0;overflow-y:auto;padding:8px 10px 10px;display:flex;flex-direction:column;gap:8px}
+.mnot-govde textarea{flex-grow:1;min-height:180px;border:2px solid var(--ink);border-radius:8px;padding:10px 12px;font-family:var(--f-govde);font-size:18px;font-weight:500;line-height:1.45;resize:none;background:var(--card);width:100%}
+.mnot-govde textarea:focus{outline:none;border:3px solid var(--sari);background:var(--sari-acik)}
+.mnot-hizli{display:flex;flex-wrap:wrap;gap:6px}
+.mnot-hizli .cip{min-height:40px;font-size:15px;padding:0 10px}
+.mnot-araclar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mnot-araclar .cip{min-height:42px;font-size:15px;padding:0 10px;gap:4px}
+.mnot-tuval{position:relative;width:100%;aspect-ratio:3/2;max-width:100%;border:2px solid var(--ink);border-radius:8px;overflow:hidden;background-color:#fff;background-image:linear-gradient(#ECECE6 1px,transparent 1px),linear-gradient(90deg,#ECECE6 1px,transparent 1px);background-size:5% 7.5%;touch-action:none}
+.mnot.tam .mnot-tuval{max-height:calc(100vh - 220px);width:auto;margin:0 auto}
+.mnot-tuval canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.mnot-durum{font-size:13px;color:var(--gri);font-weight:600}
+.kart-not{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:4px 0 0;text-align:left;font-size:15px;color:var(--gri);width:100%;min-height:40px;border-top:1px solid var(--cizgi)}
+.kart-not span{flex-grow:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kart-not b{color:var(--ink);font-family:var(--f-baslik);font-size:16px;letter-spacing:.03em}
+.serit .fazla{background:var(--ink);color:var(--sari);font-family:var(--f-baslik);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center}
+.cip{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border:2px solid var(--ink);border-radius:8px;background:var(--card);font-weight:600;font-size:16px}
+.cip[aria-pressed="true"]{background:var(--sari);font-weight:700}
+.cip.hariç{border-color:var(--kirmizi);color:var(--kirmizi);text-decoration:line-through}
+.cipler{display:flex;flex-wrap:wrap;gap:8px}
+.etiket{font-size:13px;font-weight:700;color:var(--gri);letter-spacing:.04em;text-transform:uppercase}
+.alan{display:flex;flex-direction:column;gap:5px}
+.alan input,.alan textarea,.alan select{min-height:52px;border:2px solid var(--ink);border-radius:8px;padding:0 12px;background:var(--card);font-family:var(--f-baslik);font-weight:700;font-size:22px;width:100%}
+.alan textarea{font-family:var(--f-govde);font-weight:500;font-size:18px;padding:10px 12px;min-height:96px;resize:vertical}
+.alan input:focus,.alan textarea:focus{border:3px solid var(--sari);background:var(--sari-acik);outline:none}
+.alan input.yazi{font-family:var(--f-govde);font-weight:600;font-size:19px}
+.izgara3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.izgara2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.izgara4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.not-kucuk{font-size:13px;color:var(--gri)}
+.bos{border:2px dashed var(--koyu-cizgi);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;color:var(--gri);font-size:16px;line-height:1.4}
+.bos b{color:var(--ink);font-family:var(--f-baslik);font-size:22px}
+.bos ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.durum{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#C9C9C2}
+.durum::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sari)}
+.durum.yerel::before{background:var(--kirmizi-acik)}
+/* sheet */
+.perde{position:absolute;inset:0;background:rgba(18,18,18,.6);display:flex;align-items:flex-end;z-index:20}
+.sayfa{width:100%;max-height:92%;overflow-y:auto;background:var(--card);border-top:3px solid var(--ink);border-radius:16px 16px 0 0;padding:12px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sayfa-bas{display:flex;align-items:center;justify-content:space-between}
+.sayfa-bas b{font-family:var(--f-baslik);font-weight:700;font-size:26px;text-transform:uppercase}
+.onay{display:flex;align-items:center;gap:12px;min-height:44px;font-size:16px;font-weight:500}
+.onay input{width:24px;height:24px;accent-color:var(--ink);margin:0;flex-shrink:0}
+.onay span{flex-grow:1}
+.onay em{font-style:normal;font-family:var(--f-baslik);font-weight:700;font-size:18px}
+.bildirim{position:absolute;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;font-weight:600;z-index:30;display:flex;gap:10px;align-items:center}
+.bildirim.hata{background:var(--kirmizi)}
+/* editor */
+.araclar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:8px 10px;background:var(--bg);flex-shrink:0}
+.arac{height:58px;border:2px solid var(--ink);border-radius:10px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:600;font-size:12px;padding:0}
+.arac[aria-pressed="true"]{background:var(--sari);font-weight:700}
+.sahne{flex-grow:1;position:relative;overflow:hidden;background:#2A2A27;touch-action:none;user-select:none;-webkit-user-select:none}
+.katman{position:absolute;left:0;top:0;transform-origin:0 0}
+.katman img{display:block;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.katman svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.alt-sembol{display:flex;gap:6px;padding:0 10px 8px;overflow-x:auto;flex-shrink:0}
+.alt-sembol .cip{min-height:40px;font-size:14px;padding:0 10px;white-space:nowrap}
+.bilgi{flex-shrink:0;background:var(--card);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);padding:8px 10px 8px 14px;display:flex;align-items:center;gap:10px;min-height:64px}
+.bilgi .kod{background:var(--sari);border:2px solid var(--ink);border-radius:4px;padding:1px 8px;font-family:var(--f-baslik);font-weight:700;font-size:18px}
+.bilgi .metin{flex-grow:1;display:flex;flex-direction:column;min-width:0}
+.bilgi .metin b{font-family:var(--f-baslik);font-weight:700;font-size:19px;line-height:1.1}
+.bilgi .metin span{font-size:13px;color:var(--gri)}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.zoom button{width:44px;height:44px;border-radius:8px;border:2px solid var(--ink);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center}
+.ipucu{position:absolute;left:10px;top:10px;right:64px;background:rgba(18,18,18,.82);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;z-index:2;pointer-events:none}
+/* ozet */
+.tablo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--card);border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.tablo th,.tablo td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--cizgi);font-size:15px;vertical-align:top}
+.tablo th{font-family:var(--f-baslik);font-size:15px;letter-spacing:.04em;background:var(--ink);color:#fff;text-transform:uppercase}
+.tablo td.sayi,.tablo th.sayi{text-align:right;white-space:nowrap}
+.tablo tr.ara td{background:var(--sari-acik);font-weight:700}
+.toplam{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.toplam div{border:2px solid var(--ink);border-radius:10px;background:var(--card);padding:10px 12px;display:flex;flex-direction:column}
+.toplam div:first-child{background:var(--sari)}
+.toplam span{font-size:14px;font-weight:600}
+.toplam b{font-family:var(--f-baslik);font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.marka{display:flex;align-items:center;gap:10px}
+.marka .abm{background:var(--sari);color:var(--ink);font-family:var(--f-baslik);font-weight:700;font-size:26px;padding:0 8px;border-radius:4px;line-height:1.25}
+.marka .ad{display:flex;flex-direction:column;line-height:1.05}
+.marka .ad b{font-family:var(--f-baslik);font-weight:700;font-size:22px;letter-spacing:.03em}
+.marka .ad span{font-size:12px;color:#C9C9C2;letter-spacing:.06em}
+.gizli-girdi{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none}
+@media (min-width:700px){ .serit{grid-template-columns:repeat(8,minmax(0,1fr))} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app" id="app">
+  <div id="ekran" style="display:flex;flex-direction:column;height:100%"></div>
+  <div id="sayfa-kok"></div>
+  <div id="bildirim-kok"></div>
+  <input id="dosya-kamera" class="gizli-girdi" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+  <input id="dosya-galeri" class="gizli-girdi" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+  <input id="dosya-yedek" class="gizli-girdi" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+</div>
+<script>
+/* ===== Depo: bulut (db + assets) varsa orada, yoksa bu cihazda (IndexedDB) ===== */
+const Depo = (() => {
+  let mod = 'baslatiliyor';
+  let db = null, assets = null, idbP = null;
+  const yerelDinleyiciler = new Map();
+  const zincir = new Map();       // yol -> çalışan yazma
+  const bekleyen = new Map();     // yol -> {veri|null(sil)}
+  const urlOnbellek = new Map();
+
+  function idbAc() {
+    if (idbP) return idbP;
+    idbP = new Promise((coz, red) => {
+      let istek;
+      try { istek = indexedDB.open('abm-kesif', 2); } catch (e) { red(e); return; }
+      istek.onupgradeneeded = () => {
+        const v = istek.result;
+        if (!v.objectStoreNames.contains('belgeler')) v.createObjectStore('belgeler', { keyPath: 'yol' });
+        if (!v.objectStoreNames.contains('dosyalar')) v.createObjectStore('dosyalar');
+        if (!v.objectStoreNames.contains('kuyruk')) v.createObjectStore('kuyruk', { keyPath: 'yol' });
+      };
+      istek.onsuccess = () => coz(istek.result);
+      istek.onerror = () => red(istek.error);
+    });
+    return idbP;
+  }
+  const bellek = { belgeler: new Map(), dosyalar: new Map() };
+  function bellekIs(depoAdi, fn) {
+    const m = bellek[depoAdi];
+    const sahte = {
+      getAll: () => ({ result: [...m.values()] }),
+      get: k => ({ result: m.get(k) }),
+      put: (v, k) => { if (depoAdi === 'belgeler') m.set(v.yol, v); else m.set(k, v); return { result: undefined }; },
+      delete: k => { m.delete(k); return { result: undefined }; }
+    };
+    const r = fn(sahte);
+    return Promise.resolve(r ? r.result : undefined);
+  }
+  async function idbIs(depoAdi, kip, fn) {
+    if (mod === 'bellek') return bellekIs(depoAdi, fn);
+    const v = await idbAc();
+    return new Promise((coz, red) => {
+      const tx = v.transaction(depoAdi, kip);
+      const s = tx.objectStore(depoAdi);
+      let sonuc;
+      const r = fn(s);
+      if (r) r.onsuccess = () => { sonuc = r.result; };
+      tx.oncomplete = () => coz(sonuc);
+      tx.onerror = () => red(tx.error);
+      tx.onabort = () => red(tx.error);
+    });
+  }
+
+  async function baslat() {
+    try {
+      if (window.claude && typeof window.claude.use === 'function') {
+        const [d, a] = await Promise.all([window.claude.use('db'), window.claude.use('assets')]);
+        if (d) {
+          db = d; assets = a; mod = 'bulut';
+          try {
+            const k = (await idbIs('kuyruk', 'readonly', s => s.getAll())) || [];
+            k.forEach(x => kuyrukAnahtar.add(x.yol));
+          } catch (e) { /* kuyruk yok */ }
+          setInterval(kuyrukGonder, 20000);
+          window.addEventListener('online', () => kuyrukGonder());
+          await kuyrukGonder();
+          return mod;
+        }
+      }
+    } catch (e) { /* yerel moda geç */ }
+    try { await idbAc(); mod = 'yerel'; } catch (e) { mod = 'bellek'; }
+    return mod;
+  }
+
+  function kolonAltindaMi(yol, kol) {
+    if (!yol.startsWith(kol + '/')) return false;
+    return !yol.slice(kol.length + 1).includes('/');
+  }
+  async function yerelListe(kol) {
+    const hepsi = (await idbIs('belgeler', 'readonly', s => s.getAll())) || [];
+    return hepsi.filter(b => kolonAltindaMi(b.yol, kol)).map(b => ({ id: b.yol.split('/').pop(), ...b.veri }));
+  }
+  async function yerelYay(kol) {
+    const set = yerelDinleyiciler.get(kol);
+    if (!set || !set.size) return;
+    const liste = await yerelListe(kol);
+    set.forEach(cb => { try { cb(liste); } catch (e) { console.error(e); } });
+  }
+
+  function dinle(kol, cb, hataCb) {
+    if (mod === 'bulut') {
+      return db.collection(kol).onSnapshot(
+        s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))),
+        e => { if (hataCb) hataCb(e); }
+      );
+    }
+    if (!yerelDinleyiciler.has(kol)) yerelDinleyiciler.set(kol, new Set());
+    yerelDinleyiciler.get(kol).add(cb);
+    yerelListe(kol).then(cb).catch(() => cb([]));
+    return () => { const s = yerelDinleyiciler.get(kol); if (s) s.delete(cb); };
+  }
+
+  async function tekYaz(yol, veri) {
+    if (mod === 'bulut') {
+      if (veri === null) await db.doc(yol).delete();
+      else await db.doc(yol).set(veri);
+      return;
+    }
+    if (veri === null) await idbIs('belgeler', 'readwrite', s => s.delete(yol));
+    else await idbIs('belgeler', 'readwrite', s => s.put({ yol, veri }));
+    await yerelYay(yol.split('/').slice(0, -1).join('/'));
+  }
+  // Aynı belgeye aynı anda tek yazma; arada gelenlerin sadece sonuncusu yazılır.
+  /* --- İnternet yokken bekleyen kayıtlar --- */
+  const kuyrukAnahtar = new Set();
+  const kuyrukDinleyici = new Set();
+  let kuyrukCalisiyor = false;
+  const kuyrukYay = () => kuyrukDinleyici.forEach(cb => { try { cb(kuyrukAnahtar.size); } catch (e) {} });
+  async function kuyrugaKoy(yol, veri) {
+    try { await idbIs('kuyruk', 'readwrite', s => s.put({ yol, veri, zaman: Date.now() })); } catch (e) { /* bellekte kalır */ }
+    kuyrukAnahtar.add(yol); kuyrukYay();
+  }
+  async function kuyruktanSil(yol) {
+    if (!kuyrukAnahtar.has(yol)) return;
+    kuyrukAnahtar.delete(yol);
+    try { await idbIs('kuyruk', 'readwrite', s => s.delete(yol)); } catch (e) {}
+    kuyrukYay();
+  }
+  async function kuyrukGonder() {
+    if (mod !== 'bulut' || kuyrukCalisiyor || !kuyrukAnahtar.size) return;
+    kuyrukCalisiyor = true;
+    try {
+      const liste = (await idbIs('kuyruk', 'readonly', s => s.getAll())) || [];
+      liste.sort((a, b) => (a.zaman || 0) - (b.zaman || 0));
+      for (const x of liste) {
+        if (zincir.has(x.yol) || bekleyen.has(x.yol)) continue;
+        try { await tekYaz(x.yol, x.veri); await kuyruktanSil(x.yol); }
+        catch (e) { if (e && e.code === 'invalid_argument') await kuyruktanSil(x.yol); else break; }
+      }
+    } catch (e) { /* sonra tekrar */ }
+    kuyrukCalisiyor = false;
+  }
+  const zamanli = (p, ms = 15000) => mod !== 'bulut' ? p : Promise.race([p, new Promise((_, red) => setTimeout(() => { const e = new Error('zaman asimi'); e.code = 'unavailable'; red(e); }, ms))]);
+  function yaz(yol, veri) {
+    bekleyen.set(yol, veri === null ? null : JSON.parse(JSON.stringify(veri)));
+    if (zincir.has(yol)) return zincir.get(yol);
+    const calis = (async () => {
+      let sonHata = null, sonV;
+      while (bekleyen.has(yol)) {
+        const v = bekleyen.get(yol); sonV = v;
+        bekleyen.delete(yol);
+        if (mod === 'bulut') { try { await idbIs('kuyruk', 'readwrite', st => st.put({ yol, veri: v, zaman: Date.now() })); } catch (e) {} }
+        try { await zamanli(tekYaz(yol, v)); sonHata = null; }
+        catch (e) {
+          sonHata = e;
+          if (e && e.code === 'unavailable') {
+            await new Promise(r => setTimeout(r, 600 + Math.random() * 600));
+            try { await zamanli(tekYaz(yol, v)); sonHata = null; } catch (e2) { sonHata = e2; }
+          }
+        }
+      }
+      zincir.delete(yol);
+      if (sonHata && mod === 'bulut' && !(sonHata.code === 'invalid_argument' || sonHata.code === 'quota_exceeded')) {
+        await kuyrugaKoy(yol, sonV);
+        const e = new Error('cevrimdisi'); e.code = 'kuyrukta'; throw e;
+      }
+      if (sonHata) throw sonHata;
+      if (mod === 'bulut') { kuyrukAnahtar.add(yol); kuyruktanSil(yol); }
+    })();
+    zincir.set(yol, calis);
+    return calis;
+  }
+  const sil = yol => yaz(yol, null);
+
+  async function oku(yol) {
+    if (mod === 'bulut') {
+      const s = await db.doc(yol).get();
+      return s.exists ? s.data() : null;
+    }
+    const b = await idbIs('belgeler', 'readonly', s => s.get(yol));
+    return b ? b.veri : null;
+  }
+
+  function yeniId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  async function fotoKoy(blob) {
+    if (mod === 'bulut' && assets && navigator.onLine !== false) {
+      try {
+        const r = await zamanli(assets.upload(blob, { type: 'image/jpeg' }), 20000);
+        return { ref: 'a:' + r.id, bulutta: true };
+      } catch (e) {
+        if (e && e.code === 'store_unavailable') {
+          await new Promise(r => setTimeout(r, 800));
+          try { const r = await zamanli(assets.upload(blob, { type: 'image/jpeg' }), 20000); return { ref: 'a:' + r.id, bulutta: true }; } catch (e2) { /* yerel */ }
+        }
+      }
+    }
+    const anahtar = yeniId();
+    await idbIs('dosyalar', 'readwrite', s => s.put(blob, anahtar));
+    return { ref: 'l:' + anahtar, bulutta: false };
+  }
+  // Önce telefona kaydet (anında), buluta yükleme arkadan yapılır
+  async function fotoYerelKoy(blob) {
+    try {
+      const anahtar = yeniId();
+      await idbIs('dosyalar', 'readwrite', s => s.put(blob, anahtar));
+      return 'l:' + anahtar;
+    } catch (e) {
+      return (await fotoKoy(blob)).ref;
+    }
+  }
+  async function fotoURL(ref) {
+    if (!ref) return '';
+    if (ref.startsWith('a:')) return '/_blob/' + ref.slice(2);
+    if (urlOnbellek.has(ref)) return urlOnbellek.get(ref);
+    try {
+      const blob = await idbIs('dosyalar', 'readonly', s => s.get(ref.slice(2)));
+      if (!blob) return '';
+      const u = URL.createObjectURL(blob);
+      urlOnbellek.set(ref, u);
+      return u;
+    } catch (e) { return ''; }
+  }
+  function fotoURLHizli(ref) {
+    if (!ref) return '';
+    if (ref.startsWith('a:')) return '/_blob/' + ref.slice(2);
+    return urlOnbellek.get(ref) || '';
+  }
+  async function fotoSil(ref) {
+    if (!ref) return;
+    try {
+      if (ref.startsWith('a:') && assets) await assets.delete(ref.slice(2));
+      else if (ref.startsWith('l:')) await idbIs('dosyalar', 'readwrite', s => s.delete(ref.slice(2)));
+    } catch (e) { /* önemsiz */ }
+  }
+
+  async function fotoBulutaTasi(ref) {
+    if (!ref || !ref.startsWith('l:') || mod !== 'bulut' || !assets) return null;
+    let blob;
+    try { blob = await idbIs('dosyalar', 'readonly', s => s.get(ref.slice(2))); } catch (e) { return null; }
+    if (!blob) return null;
+    try {
+      const r = await zamanli(assets.upload(blob, { type: 'image/jpeg' }), 20000);
+      try { await idbIs('dosyalar', 'readwrite', s => s.delete(ref.slice(2))); } catch (e) {}
+      return 'a:' + r.id;
+    } catch (e) { return null; }
+  }
+  // Yedek için fotoğrafın kendisini getir (cihazdaki ya da buluttaki)
+  async function fotoBlob(ref) {
+    if (!ref) return null;
+    if (ref.startsWith('l:')) {
+      try { return (await idbIs('dosyalar', 'readonly', s => s.get(ref.slice(2)))) || null; } catch (e) { return null; }
+    }
+    if (ref.startsWith('a:')) {
+      try { const r = await zamanli(fetch('/_blob/' + ref.slice(2)), 30000); return r.ok ? await r.blob() : null; } catch (e) { return null; }
+    }
+    return null;
+  }
+  const bekleyenSayisi = () => kuyrukAnahtar.size;
+  const kuyrukDinle = cb => { kuyrukDinleyici.add(cb); return () => kuyrukDinleyici.delete(cb); };
+
+  return { fotoBlob, fotoYerelKoy, fotoBulutaTasi, bekleyenSayisi, kuyrukDinle, kuyrukGonder, baslat, dinle, yaz, sil, oku, yeniId, fotoKoy, fotoURL, fotoURLHizli, fotoSil, get mod() { return mod; } };
+})();
+/* ===== Yardımcılar ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function sayi(v) {
+  if (v == null) return null;
+  const t = String(v).trim().replace(/\s/g, '').replace(',', '.');
+  if (t === '') return null;
+  const n = Number(t);
+  return isFinite(n) ? n : null;
+}
+function fmt(n, h = 2) {
+  if (n == null || !isFinite(n)) return '–';
+  return n.toLocaleString('tr-TR', { minimumFractionDigits: h, maximumFractionDigits: h });
+}
+const fmtG = n => (n == null ? '' : fmt(n)); // input değeri için
+/* Ölçüler cm girilir: 385 → 3,85 m, 385,5 → 3,855 m. Veride hep metre tutulur.
+   Güvenlik: virgüllü ve 10'dan küçük yazılırsa (3,85 gibi) eski alışkanlık sayılır, metre alınır. */
+function cmOku(v) {
+  const n = sayi(v);
+  if (n == null) return null;
+  if (/[.,]/.test(String(v)) && n < 10) return n;
+  return Math.round(n * 10) / 1000;
+}
+const cmG = m => (m == null || !isFinite(m)) ? '' : String(Math.round(m * 1000) / 10).replace('.', ',');
+const fmtO = m => fmt(m, Math.abs(Math.round(m * 1000) - Math.round(m * 100) * 10) > 0 ? 3 : 2); // gerekirse 3 hane
+function tarihYaz(iso) {
+  try { return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; }
+}
+const IK = {
+  geri: '<path d="M15 5l-7 7 7 7"/>',
+  ileri: '<path d="M9 5l7 7-7 7"/>',
+  arti: '<path d="M12 5v14M5 12h14"/>',
+  kamera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/>',
+  galeri: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/>',
+  liste: '<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>',
+  geriAl: '<path d="M9 7l-5 5 5 5M4 12h11a5 5 0 010 10h-3"/>',
+  kapat: '<path d="M6 6l12 12M18 6L6 18"/>',
+  menu: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  sec: '<path d="M5 3l14 8-6 2-2 6z" stroke-linejoin="round"/>',
+  olcu: '<path d="M3 12h18M3 8v8M21 8v8"/>',
+  bosluk: '<rect x="5" y="3" width="14" height="18"/><path d="M12 3v18M5 12h14"/>',
+  not: '<path d="M5 6h14M12 6v13"/>',
+  sembol: '<rect x="5" y="5" width="14" height="14" rx="2"/><path d="M10 10v4M14 10v4"/>',
+  kalem: '<path d="M4 20l4-1 11-11-3-3L5 16z" stroke-linejoin="round"/>',
+  zoomArti: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M11 8v6M8 11h6"/>',
+  zoomEksi: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M8 11h6"/>',
+  sigdir: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  indir: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  sil: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+  duzenle: '<path d="M4 20l4-1 11-11-3-3L5 16z" stroke-linejoin="round"/>',
+  hizli: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h2M14 8h2M8 12h2M14 12h2M8 16h2M14 16h2"/>',
+  defter: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  silgi: '<path d="M4 15l8-8 7 7-5 5H8z" stroke-linejoin="round"/><path d="M14 20h6"/>'
+};
+const ikon = (ad, b = 24, k = 2.2) => `<svg width="${b}" height="${b}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${k}" stroke-linecap="round" aria-hidden="true">${IK[ad] || ''}</svg>`;
+
+const VARSAYILAN_ADLAR = ['Salon', 'Yatak odası', 'Çocuk odası', 'Mutfak', 'Banyo', 'WC', 'Antre', 'Koridor', 'Balkon', 'Dükkan', 'Depo', 'Cephe'];
+const YUZEYLER_TEMEL = ['D1', 'D2', 'D3', 'D4', 'Tavan', 'Zemin', 'Diğer'];
+const yuzeyAdi = y => (/^D\d+$/.test(y) ? 'Duvar ' + y.slice(1) : y);
+const duvarMi = y => /^D\d+$/.test(y);
+const egimli = f => f && f.yuk2 != null && f.yuk != null && Math.abs(f.yuk2 - f.yuk) > 0.001;
+const yuzeyAlan = f => (f.gen == null || f.yuk == null) ? null : f.gen * (egimli(f) ? (f.yuk + f.yuk2) / 2 : f.yuk);
+const yuzeyHesapMetni = f => egimli(f) ? `${fmt(f.gen)}×(${fmt(f.yuk)}+${fmt(f.yuk2)})/2` : `${fmt(f.gen)}×${fmt(f.yuk)}`;
+const BOSLUK_TUR = { pencere: { ad: 'Pencere', kod: 'P' }, kapi: { ad: 'Kapı', kod: 'K' }, balkon: { ad: 'Balkon kapısı', kod: 'B' }, aciklik: { ad: 'Açıklık', kod: 'A' } };
+const SEMBOLLER = { priz: 'Priz', anahtar: 'Anahtar', lamba: 'Lamba', kolon: 'Kolon', su: 'Su tesisatı', gider: 'Gider', petek: 'Petek', catlak: 'Çatlak' };
+
+/* ===== Durum ===== */
+const S = {
+  ekran: 'yukleniyor', projeler: [], pid: null, mahaller: [], fotolar: [], fid: null,
+  ayarlar: { mahalAdlari: VARSAYILAN_ADLAR.slice() },
+  abone: { projeler: null, mahaller: null, fotolar: null },
+  bekleyenFoto: null
+};
+const proje = () => S.projeler.find(p => p.id === S.pid) || null;
+const mahal = id => S.mahaller.find(m => m.id === id) || null;
+const foto = id => S.fotolar.find(f => f.id === id) || null;
+const mahalSirali = () => S.mahaller.slice().sort((a, b) => (a.sira || 0) - (b.sira || 0) || (a.olusturma || '').localeCompare(b.olusturma || ''));
+function yuzeySira(y) { const i = YUZEYLER_TEMEL.indexOf(y); if (duvarMi(y)) return Number(y.slice(1)); return 100 + (i < 0 ? 50 : i); }
+const mahalFotolari = mid => S.fotolar.filter(f => f.mahalId === mid).sort((a, b) => yuzeySira(a.yuzey) - yuzeySira(b.yuzey) || (a.olusturma || '').localeCompare(b.olusturma || ''));
+
+/* ===== Bildirim ===== */
+let bildirimZaman = null;
+function bildir(metin, hata = false) {
+  const k = $('#bildirim-kok');
+  k.innerHTML = `<div class="bildirim${hata ? ' hata' : ''}" role="status">${esc(metin)}</div>`;
+  clearTimeout(bildirimZaman);
+  bildirimZaman = setTimeout(() => { k.innerHTML = ''; }, hata ? 5000 : 2600);
+}
+function hataMetni(e) {
+  const c = e && e.code;
+  if (c === 'kuyrukta') return 'İnternet zayıf: kayıt telefonda bekliyor, bağlantı gelince kendisi gönderilecek.';
+  if (c === 'quota_exceeded' || c === 'quota_or_state') return 'Depolama dolu. Eski fotoğrafları silip tekrar dene.';
+  if (c === 'resource_exhausted' || c === 'rate_limited') return 'Çok hızlı işlem yapıldı. Birkaç saniye bekleyip tekrar dene.';
+  if (c === 'revoked' || c === 'not_granted') return 'Kayıt izni yok. Sayfayı yenileyip tekrar dene.';
+  return 'Kaydedilemedi. İnterneti kontrol edip tekrar dene.';
+}
+const kaydet = (yol, veri) => Depo.yaz(yol, veri).catch(e => { console.error(e); bildir(hataMetni(e), e && e.code !== 'kuyrukta'); });
+/* Cihazda kalmış fotoğrafları internet gelince buluta taşı */
+let tasimaCalisiyor = false, tasimaTekrar = false;
+async function yerelFotolariTasi() {
+  if (Depo.mod !== 'bulut' || !S.pid) return;
+  if (tasimaCalisiyor) { tasimaTekrar = true; return; }
+  tasimaCalisiyor = true;
+  try {
+    for (const f of S.fotolar.filter(x => x.ref && x.ref.startsWith('l:'))) {
+      const yeni = await Depo.fotoBulutaTasi(f.ref);
+      if (!yeni) continue;
+      const guncel = foto(f.id) || f;
+      const v = { ...guncel, ref: yeni }; delete v.id;
+      const i = S.fotolar.findIndex(x => x.id === f.id); if (i >= 0) S.fotolar[i] = { id: f.id, ...v };
+      await kaydet(`projeler/${S.pid}/fotolar/${f.id}`, v);
+    }
+  } finally {
+    tasimaCalisiyor = false;
+    if (tasimaTekrar) { tasimaTekrar = false; setTimeout(yerelFotolariTasi, 500); }
+    if (S.ekran === 'proje') ciz();
+  }
+}
+setInterval(yerelFotolariTasi, 30000);
+window.addEventListener('online', () => setTimeout(yerelFotolariTasi, 3000));
+function bekleyenSerit() {
+  const n = Depo.bekleyenSayisi ? Depo.bekleyenSayisi() : 0;
+  const yerel = S.fotolar.filter(x => x.ref && x.ref.startsWith('l:')).length;
+  if (!n && !yerel) return '';
+  return `<div role="status" style="background:${n ? 'var(--kirmizi)' : 'var(--ink)'};color:#fff;padding:8px 16px;font-weight:600;font-size:14px;flex-shrink:0">${yerel ? yerel + ' fotoğraf buluta gönderiliyor' : ''}${n && yerel ? ' · ' : ''}${n ? n + ' kayıt internet bekliyor' : ''}. Sayfayı kapatma, iş bitince bu şerit kaybolur.</div>`;
+}
+
+/* ===== Sayfa (alttan açılan panel) ===== */
+function sayfaAc(html, kurulum) {
+  const kok = $('#sayfa-kok');
+  kok.innerHTML = `<div class="perde" data-perde="1"><div class="sayfa" role="dialog" aria-modal="true">${html}</div></div>`;
+  const perde = kok.firstElementChild;
+  perde.addEventListener('click', e => { if (e.target === perde) sayfaKapat(); });
+  if (kurulum) kurulum(perde.querySelector('.sayfa'));
+}
+function sayfaKapat() { $('#sayfa-kok').innerHTML = ''; }
+const sayfaBas = baslik => `<div class="sayfa-bas"><b>${esc(baslik)}</b><button class="ikon-btn" type="button" data-kapat="1" aria-label="Kapat">${ikon('kapat')}</button></div>`;
+function onayIste(metin, evet = 'SİL') {
+  return new Promise(coz => {
+    sayfaAc(`${sayfaBas('Emin misin?')}<p style="margin:0;font-size:17px;line-height:1.4">${esc(metin)}</p>
+      <div class="izgara2"><button class="btn" type="button" data-h="0">VAZGEÇ</button><button class="btn btn-kirmizi" type="button" data-h="1">${esc(evet)}</button></div>`,
+      el => {
+        el.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); coz(false); };
+        el.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { sayfaKapat(); coz(b.dataset.h === '1'); });
+      });
+  });
+}
+
+/* ===== Abonelikler ===== */
+function projelereAbone() {
+  if (S.abone.projeler) return;
+  S.abone.projeler = Depo.dinle('projeler', l => { S.projeler = l; if (S.ekran === 'projeler' || S.ekran === 'proje') ciz(); },
+    e => bildir(hataMetni(e), true));
+}
+function projeyeAbone(pid) {
+  ['mahaller', 'fotolar'].forEach(k => { if (S.abone[k]) { S.abone[k](); S.abone[k] = null; } });
+  S.mahaller = []; S.fotolar = [];
+  S.abone.mahaller = Depo.dinle(`projeler/${pid}/mahaller`, l => { S.mahaller = l.map(m => NotPanel.yerelSurum(m)); if (S.ekran === 'proje' || S.ekran === 'ozet') ciz(); });
+  S.abone.fotolar = Depo.dinle(`projeler/${pid}/fotolar`, l => {
+    S.fotolar = l;
+    l.forEach(f => { if (f.ref && f.ref.startsWith('l:') && !Depo.fotoURLHizli(f.ref)) Depo.fotoURL(f.ref).then(() => { if (S.ekran === 'proje') ciz(); }); });
+    if (S.ekran === 'proje' || S.ekran === 'ozet') ciz();
+    else if (S.ekran === 'editor') Editor.disGuncelleme(foto(S.fid));
+  });
+}
+
+/* ===== Ekranlar ===== */
+function git(ekran, ek = {}) {
+  if (S.ekran === 'editor' && ekran !== 'editor') Editor.kapat();
+  Object.assign(S, ek);
+  S.ekran = ekran;
+  ciz();
+}
+function ciz() {
+  const k = $('#ekran');
+  if (S.ekran === 'yukleniyor') { k.innerHTML = `<div class="bas"><div class="marka" style="padding-left:8px"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>AÇILIYOR…</span></span></div></div><div class="govde"></div>`; return; }
+  if (S.ekran === 'projeler') return cizProjeler(k);
+  if (S.ekran === 'proje') return cizProje(k);
+  if (S.ekran === 'editor') return Editor.ac(k, foto(S.fid));
+  if (S.ekran === 'ozet') return cizOzet(k);
+}
+const modMetni = () => Depo.mod === 'bulut' ? 'BULUTA KAYDEDİLİYOR' : Depo.mod === 'yerel' ? 'BU CİHAZA KAYDEDİLİYOR' : 'KAYIT YOK · SAYFA KAPANINCA SİLİNİR';
+const durumCip = () => Depo.mod === 'bulut' ? '<span class="durum">Buluta kaydediliyor</span>' : Depo.mod === 'yerel' ? '<span class="durum">Cihaza kaydediliyor</span>' : '<span class="durum yerel">Kayıt yok</span>';
+
+function cizProjeler(k) {
+  const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
+  k.innerHTML = `
+    <div class="bas" style="padding:10px 14px">
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v9</span></span></div>
+    </div>
+    <div class="govde">
+      ${liste.length ? liste.map(p => `
+        <button type="button" class="kart" data-proje="${esc(p.id)}" style="text-align:left;cursor:pointer">
+          <span class="kart-bas"><b>${esc(p.ad || 'Adsız keşif')}</b><span class="olcu"></span>${ikon('ileri', 20, 2.4)}</span>
+          <span style="font-size:15px;color:var(--gri)">${esc([p.musteri, p.adres].filter(Boolean).join(' · ') || 'Müşteri bilgisi yok')}</span>
+          <span class="not-kucuk">${esc(tarihYaz(p.tarih))}</span>
+        </button>`).join('') : `
+        <div class="bos"><b>İlk keşfini başlat</b>
+          <ol><li>Keşif aç: iş adı, müşteri, adres.</li><li>Mahalleri ekle, her duvarın fotoğrafını çek.</li><li>Fotoğrafın üstüne ölçü, kapı, pencere ve not gir.</li><li>Metraj özetini ofiste Excel'e aktar.</li></ol>
+        </div>`}
+    </div>
+    <div class="alt"><button type="button" class="btn btn-sari" data-yeni-proje="1" style="min-height:64px">${ikon('arti', 26)} YENİ KEŞİF</button>
+      <label for="dosya-yedek" class="btn btn-kucuk" data-yedek-yukle="1" role="button" tabindex="0" style="cursor:pointer">YEDEKTEN GERİ YÜKLE</label></div>`;
+  const yy = k.querySelector('[data-yedek-yukle]');
+  yy.addEventListener('click', () => { const inp = document.getElementById('dosya-yedek'); if (inp) inp.value = ''; });
+  yy.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); yy.click(); } });
+  k.querySelectorAll('[data-proje]').forEach(b => b.onclick = () => projeAc(b.dataset.proje));
+  k.querySelector('[data-yeni-proje]').onclick = () => projeSayfasi(null);
+}
+function projeAc(pid) {
+  if (S.pid !== pid) { S.pid = pid; projeyeAbone(pid); }
+  git('proje');
+}
+function projeSayfasi(p) {
+  sayfaAc(`${sayfaBas(p ? 'Keşfi düzenle' : 'Yeni keşif')}
+    <label class="alan" for="p-ad"><span class="etiket">İş adı</span><input id="p-ad" class="yazi" type="text" placeholder="Örn. Daire tadilatı" value="${esc(p ? p.ad : '')}"></label>
+    <label class="alan" for="p-mus"><span class="etiket">Müşteri</span><input id="p-mus" class="yazi" type="text" value="${esc(p ? p.musteri : '')}"></label>
+    <label class="alan" for="p-adr"><span class="etiket">Adres</span><input id="p-adr" class="yazi" type="text" value="${esc(p ? p.adres : '')}"></label>
+    ${p ? `<button type="button" class="btn btn-kucuk" data-yedek="1">${ikon('indir', 20)} YEDEK AL (FOTOĞRAFLARLA)</button>
+    <button type="button" class="btn btn-kirmizi btn-kucuk" data-sil="1">${ikon('sil', 20)} KEŞFİ SİL</button>` : ''}
+    <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`,
+    el => {
+      el.querySelector('[data-kapat]').onclick = sayfaKapat;
+      if (!p) setTimeout(() => el.querySelector('#p-ad').focus(), 50);
+      el.querySelector('[data-kaydet]').onclick = () => {
+        const simdi = new Date().toISOString();
+        const veri = { ...(p || {}), ad: el.querySelector('#p-ad').value.trim() || 'Adsız keşif', musteri: el.querySelector('#p-mus').value.trim(), adres: el.querySelector('#p-adr').value.trim(), guncelleme: simdi };
+        if (!p) { veri.tarih = simdi; veri.olusturma = simdi; }
+        delete veri.id;
+        const id = p ? p.id : Depo.yeniId();
+        kaydet(`projeler/${id}`, veri);
+        S.projeler = S.projeler.filter(x => x.id !== id).concat([{ id, ...veri }]);
+        sayfaKapat();
+        if (!p) projeAc(id);
+      };
+      const yd = el.querySelector('[data-yedek]');
+      if (yd) yd.onclick = () => yedekAl(p);
+      const s = el.querySelector('[data-sil]');
+      if (s) s.onclick = async () => {
+        if (!(await onayIste(`"${p.ad}" keşfi ve içindeki tüm mahaller ile fotoğraflar silinecek.`))) return;
+        for (const f of S.fotolar) { await Depo.fotoSil(f.ref); await Depo.sil(`projeler/${p.id}/fotolar/${f.id}`).catch(() => {}); }
+        for (const m of S.mahaller) await Depo.sil(`projeler/${p.id}/mahaller/${m.id}`).catch(() => {});
+        await Depo.sil(`projeler/${p.id}`).catch(e => bildir(hataMetni(e), true));
+        git('projeler', { pid: null });
+        bildir('Keşif silindi');
+      };
+    });
+}
+function projeDokun() {
+  const p = proje(); if (!p) return;
+  const v = { ...p, guncelleme: new Date().toISOString() }; delete v.id;
+  kaydet(`projeler/${p.id}`, v);
+}
+
+function cizProje(k) {
+  const p = proje();
+  if (!p) { k.innerHTML = `<div class="bas"><button class="ikon-btn" data-geri="1" aria-label="Keşiflere dön">${ikon('geri', 26)}</button><div class="baslik"><b>Keşif</b><span>Yükleniyor…</span></div></div><div class="govde"></div>`; k.querySelector('[data-geri]').onclick = () => git('projeler'); return; }
+  const mahaller = mahalSirali();
+  const toplamKroki = S.fotolar.filter(x => !x.ref).length;
+  const toplamFoto = (S.fotolar.length - toplamKroki) + (toplamKroki ? ' FOTO · ' + toplamKroki + ' KROKİ' : '');
+  k.innerHTML = `
+    <div class="bas">
+      <button class="ikon-btn" type="button" data-geri="1" aria-label="Keşiflere dön">${ikon('geri', 26)}</button>
+      <div class="baslik"><b>${esc(p.ad)}</b><span>${esc([p.musteri, p.adres].filter(Boolean).join(' · ') || tarihYaz(p.tarih))}</span></div>
+      <button class="ikon-btn" type="button" data-proje-menu="1" aria-label="Keşif bilgileri">${ikon('menu', 26)}</button>
+    </div>
+    <div style="background:var(--sari);padding:9px 18px;display:flex;justify-content:space-between;font-family:var(--f-baslik);font-weight:700;font-size:19px;letter-spacing:.03em;flex-shrink:0">
+      <span>${mahaller.length} MAHAL</span><span>${toplamFoto}${toplamKroki ? '' : ' FOTO'}</span><span>${esc(tarihYaz(p.tarih))}</span>
+    </div>
+    ${bekleyenSerit()}
+    <div class="govde">
+      ${mahaller.length ? mahaller.map(m => {
+        const fl = mahalFotolari(m.id);
+        const olc = [m.en != null && m.boy != null ? `${fmt(m.en)} × ${fmt(m.boy)}` : '', m.h != null ? `h ${fmt(m.h)}` : ''].filter(Boolean).join(' · ');
+        return `<div class="kart">
+          <button type="button" class="kart-bas" data-mahal-duzenle="${esc(m.id)}" style="border:0;background:transparent;padding:0;text-align:left;width:100%">
+            <b>${esc(m.ad)}</b><span class="olcu">${esc(olc || 'ölçü girilmedi')}</span>${ikon('duzenle', 20)}
+          </button>
+          <div class="serit">
+            ${fl.map(f => `<button type="button" class="kucuk${f.ref ? '' : ' kroki-kucuk'}" data-foto="${esc(f.id)}" aria-label="${esc(m.ad + ' ' + yuzeyAdi(f.yuzey))}">${Depo.fotoURLHizli(f.ref) ? `<img src="${esc(Depo.fotoURLHizli(f.ref))}" alt="">` : ''}<i>${esc(f.yuzey)}${(f.notlar || []).length ? ' · ' + f.notlar.length : ''}</i></button>`).join('')}
+            <button type="button" class="kucuk ekle" data-foto-cek="${esc(m.id)}" aria-label="${esc(m.ad)} için fotoğraf çek">${ikon('kamera', 22)}</button>
+          </div>
+          <button type="button" class="kart-not" data-mahal-not="${esc(m.id)}">${ikon('defter', 20)}<span>${esc((m.not || '').split('\n').map(x => x.trim()).filter(Boolean).join(' · ') || 'Not ve detay çizimi yok')}</span>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length ? `<b>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length} ÇİZİM</b>` : ''}</button>
+        </div>`;
+      }).join('') : `<div class="bos"><b>Mahal ekle</b>Alttaki <b style="font-size:inherit">+</b> düğmesiyle ilk mahali (oda, dükkan, cephe…) ekle. Sonra her duvarın fotoğrafını çekersin.</div>`}
+    </div>
+    <div class="alt" style="grid-template-columns:64px minmax(0,1fr) 64px">
+      <button type="button" class="btn" data-mahal-ekle="1" aria-label="Mahal ekle" style="min-height:64px;padding:0">${ikon('arti', 28)}</button>
+      <button type="button" class="btn btn-sari" data-foto-cek="" style="min-height:64px">${ikon('kamera', 26)} FOTOĞRAF ÇEK</button>
+      <button type="button" class="btn btn-siyah" data-ozet="1" aria-label="Metraj özeti" style="min-height:64px;padding:0">${ikon('liste', 28)}</button>
+    </div>`;
+  k.querySelector('[data-geri]').onclick = () => git('projeler');
+  k.querySelector('[data-proje-menu]').onclick = () => projeSayfasi(p);
+  k.querySelector('[data-mahal-ekle]').onclick = () => mahalSayfasi(null);
+  k.querySelector('[data-ozet]').onclick = () => git('ozet');
+  k.querySelectorAll('[data-mahal-duzenle]').forEach(b => b.onclick = () => mahalSayfasi(mahal(b.dataset.mahalDuzenle)));
+  k.querySelectorAll('[data-foto]').forEach(b => b.onclick = () => git('editor', { fid: b.dataset.foto }));
+  k.querySelectorAll('[data-mahal-not]').forEach(b => b.onclick = () => {
+    const mid = b.dataset.mahalNot;
+    sayfaAc(`<div data-not-kok="1"></div>`, el => NotPanel.ac(el.querySelector('[data-not-kok]'), mid, { gomulu: true, kapat: () => { NotPanel.kapat(); sayfaKapat(); ciz(); } }));
+  });
+  k.querySelectorAll('[data-foto-cek]').forEach(b => b.onclick = () => fotoKaynakSec(b.dataset.fotoCek || null));
+}
+
+function mahalSayfasi(m, sonra) {
+  const adlar = S.ayarlar.mahalAdlari && S.ayarlar.mahalAdlari.length ? S.ayarlar.mahalAdlari : VARSAYILAN_ADLAR;
+  sayfaAc(`${sayfaBas(m ? 'Mahali düzenle' : 'Yeni mahal')}
+    <label class="alan" for="m-ad"><span class="etiket">Mahal adı</span><input id="m-ad" class="yazi" type="text" autocomplete="off" placeholder="Yaz ya da aşağıdan seç" value="${esc(m ? m.ad : '')}"></label>
+    <div class="alan"><span style="display:flex;justify-content:space-between;align-items:baseline"><span class="etiket">Hızlı seç</span><button type="button" data-liste="1" style="border:0;background:transparent;padding:6px 0;font-weight:600;text-decoration:underline">Listeyi düzenle</button></span>
+      <div class="cipler">${adlar.map(a => `<button type="button" class="cip" data-ad="${esc(a)}">${esc(a)}</button>`).join('')}</div></div>
+    <div class="alan"><span class="etiket">Ölçüler (cm) <span style="font-weight:500;text-transform:none">· istersen sonra duvar duvar girersin</span></span>
+      <div class="izgara3">
+        <label class="alan" for="m-en"><span class="not-kucuk">EN</span><input id="m-en" type="text" inputmode="decimal" value="${esc(m ? cmG(m.en) : '')}" placeholder="cm"></label>
+        <label class="alan" for="m-boy"><span class="not-kucuk">BOY</span><input id="m-boy" type="text" inputmode="decimal" value="${esc(m ? cmG(m.boy) : '')}" placeholder="cm"></label>
+        <label class="alan" for="m-h"><span class="not-kucuk">YÜKSEKLİK</span><input id="m-h" type="text" inputmode="decimal" value="${esc(m ? cmG(m.h) : '')}" placeholder="cm"></label>
+      </div></div>
+    ${m ? `<button type="button" class="btn btn-kirmizi btn-kucuk" data-sil="1">${ikon('sil', 20)} MAHALİ SİL</button>` : ''}
+    <div class="izgara2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)">
+      <button type="button" class="btn" data-kaydet="0">KAYDET</button>
+      <button type="button" class="btn btn-sari" data-kaydet="1">${ikon('kamera', 22)} KAYDET, FOTO</button>
+    </div>`,
+    el => {
+      el.querySelector('[data-kapat]').onclick = sayfaKapat;
+      const adInput = el.querySelector('#m-ad');
+      const cipGuncel = () => el.querySelectorAll('[data-ad]').forEach(c => c.setAttribute('aria-pressed', c.dataset.ad === adInput.value.trim() ? 'true' : 'false'));
+      cipGuncel();
+      adInput.addEventListener('input', cipGuncel);
+      el.querySelectorAll('[data-ad]').forEach(c => c.onclick = () => {
+        let ad = c.dataset.ad;
+        const ayni = S.mahaller.filter(x => (!m || x.id !== m.id) && (x.ad === ad || x.ad.startsWith(ad + ' '))).length;
+        if (ayni) ad = ad + ' ' + (ayni + 1);
+        adInput.value = ad; cipGuncel();
+      });
+      el.querySelector('[data-liste]').onclick = () => adListesiSayfasi();
+      el.querySelectorAll('[data-kaydet]').forEach(b => b.onclick = () => {
+        const ad = adInput.value.trim();
+        if (!ad) { bildir('Mahal adını yaz ya da listeden seç', true); adInput.focus(); return; }
+        const veri = { ...(m || {}), ad, en: cmOku(el.querySelector('#m-en').value), boy: cmOku(el.querySelector('#m-boy').value), h: cmOku(el.querySelector('#m-h').value) };
+        delete veri.id;
+        if (!m) { veri.olusturma = new Date().toISOString(); veri.sira = S.mahaller.reduce((a, x) => Math.max(a, x.sira || 0), 0) + 1; }
+        const id = m ? m.id : Depo.yeniId();
+        kaydet(`projeler/${S.pid}/mahaller/${id}`, veri);
+        if (!m) S.mahaller = S.mahaller.concat([{ id, ...veri }]);
+        projeDokun();
+        sayfaKapat();
+        if (b.dataset.kaydet === '1' && !sonra) fotoKaynakSec(id);
+        if (sonra) sonra(id);
+      });
+      const s = el.querySelector('[data-sil]');
+      if (s) s.onclick = async () => {
+        const fl = mahalFotolari(m.id);
+        if (!(await onayIste(`"${m.ad}" ve ${fl.length} fotoğrafı silinecek.`))) return;
+        for (const f of fl) { await Depo.fotoSil(f.ref); await Depo.sil(`projeler/${S.pid}/fotolar/${f.id}`).catch(() => {}); }
+        await Depo.sil(`projeler/${S.pid}/mahaller/${m.id}`).catch(e => bildir(hataMetni(e), true));
+        bildir('Mahal silindi');
+      };
+    });
+}
+function adListesiSayfasi() {
+  const adlar = S.ayarlar.mahalAdlari || VARSAYILAN_ADLAR;
+  sayfaAc(`${sayfaBas('Hızlı seçim listesi')}
+    <label class="alan" for="liste-ad"><span class="etiket">Her satıra bir mahal adı</span><textarea id="liste-ad" rows="10">${esc(adlar.join('\n'))}</textarea></label>
+    <div class="izgara2"><button type="button" class="btn btn-kucuk" data-varsayilan="1">VARSAYILANA DÖN</button><button type="button" class="btn btn-siyah btn-kucuk" data-kaydet="1">KAYDET</button></div>`,
+    el => {
+      el.querySelector('[data-kapat]').onclick = () => mahalSayfasi(null);
+      el.querySelector('[data-varsayilan]').onclick = () => { el.querySelector('#liste-ad').value = VARSAYILAN_ADLAR.join('\n'); };
+      el.querySelector('[data-kaydet]').onclick = () => {
+        const l = el.querySelector('#liste-ad').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 60);
+        S.ayarlar.mahalAdlari = l.length ? l : VARSAYILAN_ADLAR.slice();
+        kaydet('ayarlar/genel', S.ayarlar);
+        mahalSayfasi(null);
+      };
+    });
+}
+
+/* ===== Fotoğraf alma ===== */
+function fotoKaynakSec(mid) {
+  S.bekleyenFoto = { mid: mid || null };
+  sayfaAc(`${sayfaBas('Fotoğraf')}
+    <label for="dosya-kamera" class="btn btn-sari" data-k="kamera" role="button" tabindex="0" style="min-height:72px;cursor:pointer">${ikon('kamera', 28)} KAMERAYI AÇ</label>
+    <label for="dosya-galeri" class="btn" data-k="galeri" role="button" tabindex="0" style="min-height:64px;cursor:pointer">${ikon('galeri', 26)} GALERİDEN SEÇ</label>
+    <button type="button" class="btn" data-kroki="1" style="min-height:64px">${ikon('kalem', 24)} FOTOĞRAFSIZ · BOŞ KROKİ</button>
+    <p class="not-kucuk" style="margin:0;line-height:1.45">Hızlı yol: fotoğrafları cihazın kendi kamerasıyla art arda çek, sonra <b>Galeriden seç</b> ile hepsini birden seç. Sırayla Duvar 1, 2, 3… olarak kaydedilir. Fotoğrafa vakit yoksa <b>Boş kroki</b>: kareli sayfaya kalemle çiz, ölçüyü yaz, metraj aynı şekilde hesaplanır.</p>`,
+    el => {
+      el.querySelector('[data-kapat]').onclick = sayfaKapat;
+      el.querySelector('[data-kroki]').onclick = () => { S.bekleyenFoto = { mid: mid || null, ...BOS_KROKI() }; yuzeySayfasi(); };
+      el.querySelectorAll('[data-k]').forEach(l => {
+        l.addEventListener('click', () => { const inp = document.getElementById(l.getAttribute('for')); if (inp) inp.value = ''; });
+        l.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); l.click(); } });
+      });
+    });
+}
+/* Fotoğrafsız sayfa: kareli boş kroki (1 kare = 20 birim, ölçek yok; ölçüyü kullanıcı yazar) */
+const BOS_KROKI = () => ({ blob: null, w: 1600, h: 1100, onizleme: '', kroki: true });
+async function fotoIsle(dosya) {
+  const MAKS = 1600;
+  let kaynak, w, h;
+  try {
+    kaynak = await createImageBitmap(dosya, { imageOrientation: 'from-image' });
+    w = kaynak.width; h = kaynak.height;
+  } catch (e) {
+    kaynak = await new Promise((coz, red) => { const i = new Image(); i.onload = () => coz(i); i.onerror = red; i.src = URL.createObjectURL(dosya); });
+    w = kaynak.naturalWidth; h = kaynak.naturalHeight;
+  }
+  const o = Math.min(1, MAKS / Math.max(w, h));
+  const cw = Math.round(w * o), ch = Math.round(h * o);
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+  c.getContext('2d').drawImage(kaynak, 0, 0, cw, ch);
+  const blob = await new Promise(coz => c.toBlob(coz, 'image/jpeg', 0.82));
+  return { blob, w: cw, h: ch };
+}
+async function dosyaSecildi(e) {
+  const dosyalar = [...(e.target.files || [])];
+  if (!dosyalar.length) return;
+  const bf0 = S.bekleyenFoto || {};
+  if (dosyalar.length > 1) {
+    const liste = [];
+    for (let i = 0; i < dosyalar.length; i++) {
+      sayfaAc(`${sayfaBas('Fotoğraflar hazırlanıyor')}<p style="margin:0;font-size:17px">${i + 1} / ${dosyalar.length} küçültülüyor…</p>`);
+      try { const x = await fotoIsle(dosyalar[i]); liste.push({ ...x, onizleme: URL.createObjectURL(x.blob) }); } catch (err) { /* atla */ }
+    }
+    if (!liste.length) { sayfaKapat(); bildir('Fotoğraflar okunamadı.', true); return; }
+    cokluSayfasi(bf0.mid || null, liste);
+    return;
+  }
+  if (!bf0.otomatik) sayfaAc(`${sayfaBas('Fotoğraf hazırlanıyor')}<p style="margin:0;font-size:17px">Fotoğraf küçültülüyor…</p>`);
+  let islenen;
+  try { islenen = await fotoIsle(dosyalar[0]); }
+  catch (err) { sayfaKapat(); bildir('Fotoğraf okunamadı. Başka bir fotoğraf dene.', true); return; }
+  if (bf0.otomatik && bf0.mid && mahal(bf0.mid)) {
+    const m = mahal(bf0.mid), y = sonrakiDuvar(bf0.mid), v = yuzeyVarsayilanOlcu(m, y);
+    const fid = await fotoKaydet({ mid: bf0.mid, y, gen: v.gen, yuk: v.yuk, yuk2: null, bf: islenen });
+    S.bekleyenFoto = null;
+    git('editor', { fid });
+    bildir(`${yuzeyAdi(y)} olarak kaydedildi. Yanlışsa alttaki Yüzey düğmesinden değiştir.`);
+    return;
+  }
+  S.bekleyenFoto = { ...bf0, ...islenen, onizleme: URL.createObjectURL(islenen.blob) };
+  yuzeySayfasi();
+}
+/* Fotoğrafı önce telefona kaydeder (anında), buluta arkadan gönderir */
+async function fotoKaydet({ mid, y, gen, yuk, yuk2, bf }) {
+  const ref = bf.blob ? await Depo.fotoYerelKoy(bf.blob) : null;
+  if (ref) await Depo.fotoURL(ref);
+  const fid = Depo.yeniId();
+  const veri = { mahalId: mid, yuzey: y, gen: gen == null ? null : gen, yuk: yuk == null ? null : yuk, yuk2: yuk2 == null ? null : yuk2, ref, w: bf.w, h: bf.h, notlar: [], olusturma: new Date().toISOString() };
+  S.fotolar = S.fotolar.concat([{ id: fid, ...veri }]);
+  Depo.yaz(`projeler/${S.pid}/fotolar/${fid}`, veri).catch(e => bildir(hataMetni(e), !e || e.code !== 'kuyrukta'));
+  projeDokun();
+  setTimeout(yerelFotolariTasi, 300);
+  return fid;
+}
+function cokluSayfasi(mid0, liste) {
+  const mahaller = mahalSirali();
+  if (!mahaller.length) { sayfaKapat(); bildir('Önce bir mahal ekle', true); mahalSayfasi(null, id => setTimeout(() => cokluSayfasi(id, liste), 60)); return; }
+  let mid = mid0 && mahal(mid0) ? mid0 : (mahaller.length === 1 ? mahaller[0].id : null);
+  const html = () => {
+    const bas = mid ? sonrakiDuvar(mid) : 'D1';
+    const n0 = duvarMi(bas) ? Number(bas.slice(1)) : 1;
+    return `${sayfaBas(liste.length + ' fotoğraf seçildi')}
+      <div class="serit" style="grid-template-columns:repeat(6,minmax(0,1fr))">${liste.slice(0, 12).map(x => `<span class="kucuk"><img src="${esc(x.onizleme)}" alt=""></span>`).join('')}</div>
+      <div class="alan"><span class="etiket">Hangi mahal?</span><div class="cipler">${mahaller.map(x => `<button type="button" class="cip" data-mid="${esc(x.id)}" aria-pressed="${x.id === mid}">${esc(x.ad)}</button>`).join('')}</div></div>
+      ${mid ? `<p style="margin:0;font-size:16px;line-height:1.4">Seçim sırasıyla <b>Duvar ${n0}</b>'den <b>Duvar ${n0 + liste.length - 1}</b>'e kadar kaydedilecek. Ölçüler mahal ölçüsünden gelir, sonra fotoğraf ekranında düzeltebilirsin.</p>` : ''}
+      <button type="button" class="btn btn-siyah" data-tamam="1" ${mid ? '' : 'disabled style="opacity:.4"'}>HEPSİNİ KAYDET</button>`;
+  };
+  const kur = el => {
+    el.querySelector('[data-kapat]').onclick = () => { liste.forEach(x => URL.revokeObjectURL(x.onizleme)); sayfaKapat(); };
+    el.querySelectorAll('[data-mid]').forEach(b => b.onclick = () => { mid = b.dataset.mid; sayfaAc(html(), kur); });
+    const t = el.querySelector('[data-tamam]');
+    t.onclick = async () => {
+      if (!mid) return;
+      t.disabled = true;
+      const m = mahal(mid);
+      for (let i = 0; i < liste.length; i++) {
+        t.textContent = `KAYDEDİLİYOR ${i + 1}/${liste.length}`;
+        const y = sonrakiDuvar(mid), v = yuzeyVarsayilanOlcu(m, y);
+        try { await fotoKaydet({ mid, y, gen: v.gen, yuk: v.yuk, yuk2: null, bf: liste[i] }); } catch (e) { bildir(hataMetni(e), true); }
+      }
+      liste.forEach(x => URL.revokeObjectURL(x.onizleme));
+      sayfaKapat(); S.bekleyenFoto = null;
+      git('proje');
+      bildir(`${liste.length} fotoğraf kaydedildi`);
+    };
+  };
+  sayfaAc(html(), kur);
+}
+function sonrakiDuvar(mid) {
+  const kullanilan = new Set(mahalFotolari(mid).map(f => f.yuzey));
+  for (let i = 1; i <= 12; i++) if (!kullanilan.has('D' + i)) return 'D' + i;
+  return 'Diğer';
+}
+function yuzeyVarsayilanOlcu(m, y) {
+  if (!m) return { gen: null, yuk: null };
+  if (y === 'D1' || y === 'D3') return { gen: m.en, yuk: m.h };
+  if (y === 'D2' || y === 'D4') return { gen: m.boy, yuk: m.h };
+  if (y === 'Tavan' || y === 'Zemin') return { gen: m.en, yuk: m.boy };
+  return { gen: null, yuk: duvarMi(y) ? m.h : null };
+}
+function yuzeySayfasi() {
+  const bf = S.bekleyenFoto;
+  const mahaller = mahalSirali();
+  if (!mahaller.length) { sayfaKapat(); mahalSayfasi(null, id => { S.bekleyenFoto = { ...bf, mid: id }; setTimeout(yuzeySayfasi, 60); }); bildir('Önce fotoğrafın ait olduğu mahali ekle'); return; }
+  let mid = bf.mid && mahal(bf.mid) ? bf.mid : (mahaller.length === 1 ? mahaller[0].id : null);
+  let y = mid ? sonrakiDuvar(mid) : 'D1';
+  const html = () => {
+    const m = mid ? mahal(mid) : null;
+    const yuzeyler = YUZEYLER_TEMEL.slice();
+    if (mid) { const ekstra = mahalFotolari(mid).map(f => f.yuzey).filter(x => duvarMi(x) && !yuzeyler.includes(x)); ekstra.forEach(x => yuzeyler.splice(yuzeyler.indexOf('Tavan'), 0, x)); }
+    if (duvarMi(y) && !yuzeyler.includes(y)) yuzeyler.splice(yuzeyler.indexOf('Tavan'), 0, y);
+    const v = yuzeyVarsayilanOlcu(m, y);
+    return `${sayfaBas(bf.kroki ? 'Kroki nereye ait?' : 'Bu fotoğraf nereye ait?')}
+      ${bf.kroki ? '<div class="kroki-onizleme">BOŞ KROKİ SAYFASI</div>' : `<img src="${esc(bf.onizleme)}" alt="Çekilen fotoğraf" style="width:100%;max-height:170px;object-fit:contain;background:#2A2A27;border-radius:8px">`}
+      <div class="alan"><span class="etiket">Mahal</span><div class="cipler">${mahaller.map(x => `<button type="button" class="cip" data-mid="${esc(x.id)}" aria-pressed="${x.id === mid}">${esc(x.ad)}</button>`).join('')}<button type="button" class="cip" data-yeni-mahal="1">${ikon('arti', 18)} Yeni</button></div></div>
+      ${mid ? `<div class="alan"><span class="etiket">Yüzey</span><div class="cipler">${yuzeyler.map(x => `<button type="button" class="cip" data-y="${esc(x)}" aria-pressed="${x === y}">${esc(yuzeyAdi(x))}</button>`).join('')}<button type="button" class="cip" data-duvar-ekle="1">${ikon('arti', 18)} Duvar</button></div></div>
+      <div class="alan"><span class="etiket">${duvarMi(y) ? 'Duvar ölçüsü (cm)' : (y === 'Tavan' || y === 'Zemin') ? 'Alan ölçüsü (cm)' : 'Ölçü (cm)'}</span>
+        <div class="izgara2">
+          <label class="alan" for="y-gen"><span class="not-kucuk">${duvarMi(y) ? 'GENİŞLİK' : 'EN'}</span><input id="y-gen" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(v.gen))}"></label>
+          <label class="alan" for="y-yuk"><span class="not-kucuk">${duvarMi(y) ? 'YÜKSEKLİK (SOL)' : 'BOY'}</span><input id="y-yuk" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(v.yuk))}"></label>
+        </div>
+        ${duvarMi(y) ? `<label class="alan" for="y-yuk2"><span class="not-kucuk">SAĞ YÜKSEKLİK · sadece eğimli duvarda (merdiven)</span><input id="y-yuk2" type="text" inputmode="decimal" placeholder="Düz duvarda boş bırak"></label>` : ''}</div>` : ''}
+      <button type="button" class="btn btn-siyah" data-tamam="1" ${mid ? '' : 'disabled style="opacity:.4"'}>${bf.kroki ? 'KAYDET VE ÇİZ' : 'KAYDET VE NOT AL'}</button>`;
+  };
+  const kur = el => {
+    el.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); S.bekleyenFoto = null; };
+    el.querySelectorAll('[data-mid]').forEach(b => b.onclick = () => { mid = b.dataset.mid; y = sonrakiDuvar(mid); yeniden(); });
+    el.querySelectorAll('[data-y]').forEach(b => b.onclick = () => { y = b.dataset.y; yeniden(); });
+    const de = el.querySelector('[data-duvar-ekle]');
+    if (de) de.onclick = () => { let n = 5; const kul = new Set(mahalFotolari(mid).map(f => f.yuzey)); while (kul.has('D' + n)) n++; y = 'D' + n; yeniden(); };
+    el.querySelector('[data-yeni-mahal]').onclick = () => { const kopya = { ...S.bekleyenFoto }; mahalSayfasi(null, id => { S.bekleyenFoto = { ...kopya, mid: id }; setTimeout(yuzeySayfasi, 60); }); };
+    const t = el.querySelector('[data-tamam]');
+    t.onclick = async () => {
+      if (!mid) return;
+      const gen = cmOku(el.querySelector('#y-gen') ? el.querySelector('#y-gen').value : null);
+      const yuk = cmOku(el.querySelector('#y-yuk') ? el.querySelector('#y-yuk').value : null);
+      const yuk2 = cmOku(el.querySelector('#y-yuk2') ? el.querySelector('#y-yuk2').value : null);
+      t.disabled = true; t.textContent = 'KAYDEDİLİYOR…';
+      try {
+        const fid = await fotoKaydet({ mid, y, gen, yuk, yuk2, bf });
+        if (bf.onizleme) URL.revokeObjectURL(bf.onizleme);
+        S.bekleyenFoto = null;
+        sayfaKapat();
+        git('editor', { fid });
+      } catch (e) {
+        console.error(e); t.disabled = false; t.textContent = bf.kroki ? 'KAYDET VE ÇİZ' : 'KAYDET VE NOT AL'; bildir(hataMetni(e), true);
+      }
+    };
+  };
+  const yeniden = () => sayfaAc(html(), kur);
+  yeniden();
+}
+/* ===== Mahal notları: yazı + elle detay çizimi (mahal belgesinde saklanır) ===== */
+const NotPanel = (() => {
+  const DW = 1200, DH = 800;            // çizim alanının iç ölçüsü (3:2)
+  const HIZLI = ['Yapılacak: ', 'Hariç: ', 'Dikkat: ', 'Müşteri istedi: '];
+  let kok = null, mid = null, sekme = 'yazi', detayId = null, ops = {};
+  let cizgiler = [], gecmis = [], aktif = null, kalemGoruldu = false, arac = 'ince', temizleOnay = false;
+  let kanvas = null, ctx = null, gozlemci = null;
+  const bekleyen = new Map(); // mid -> zamanlayıcı
+  const yerel = new Map();    // mid -> henüz yazılmamış alanlar (not, detaylar)
+  const yeniDetayId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+  function kaydetGec(id, ek) {
+    // S.mahaller içinde anında güncelle, belgeye 800 ms sonra yaz
+    const i = S.mahaller.findIndex(x => x.id === id);
+    if (i < 0) return;
+    S.mahaller[i] = { ...S.mahaller[i], ...ek };
+    yerel.set(id, { ...(yerel.get(id) || {}), ...ek });
+    clearTimeout(bekleyen.get(id));
+    bekleyen.set(id, setTimeout(() => yazSimdi(id), 800));
+    durumYaz('Kaydediliyor…');
+  }
+  function yazSimdi(id) {
+    clearTimeout(bekleyen.get(id)); bekleyen.delete(id);
+    const m = mahal(id); yerel.delete(id); if (!m) return;
+    const v = { ...m }; delete v.id;
+    kaydet(`projeler/${S.pid}/mahaller/${id}`, v);
+    projeDokun();
+    durumYaz('Kaydedildi');
+  }
+  function hepsiniYaz() { [...bekleyen.keys()].forEach(yazSimdi); }
+  function durumYaz(t) { const d = kok && kok.querySelector('[data-mnot-durum]'); if (d) d.textContent = t; }
+
+  function detaylar() { const m = mahal(mid); return (m && Array.isArray(m.detaylar)) ? m.detaylar : []; }
+  function detayKaydet() {
+    const l = detaylar().map(d => d.id === detayId ? { ...d, cizgiler } : d);
+    kaydetGec(mid, { detaylar: l });
+  }
+
+  function ac(kap, mid_, ops_) {
+    if (kok && kok !== kap) kapat();
+    kok = kap; mid = mid_; ops = ops_ || {};
+    const m = mahal(mid);
+    if (!m) { kok.innerHTML = '<div class="mnot-govde">Mahal bulunamadı.</div>'; return; }
+    kok.classList.add('mnot');
+    kok.classList.toggle('gomulu', !!ops.gomulu);
+    const dl = detaylar();
+    if (!dl.find(d => d.id === detayId)) detayId = dl.length ? dl[0].id : null;
+    ciz();
+  }
+  function kapat() {
+    hepsiniYaz();
+    if (gozlemci) { gozlemci.disconnect(); gozlemci = null; }
+    kanvas = null; ctx = null; aktif = null;
+    kok = null;
+  }
+
+  function ciz() {
+    if (!kok) return;
+    const m = mahal(mid);
+    const dl = detaylar();
+    kok.innerHTML = `
+      <div class="mnot-bas">${ikon('defter', 22)}<span class="mnot-ad">${esc(m ? m.ad : '')} · notlar</span>
+        ${ops.gomulu ? '' : `<button type="button" class="ikon-btn" data-mnot-tam="1" aria-label="Tam ekran" aria-pressed="${kok.classList.contains('tam')}">${ikon('sigdir', 22)}</button>`}
+        <button type="button" class="ikon-btn" data-mnot-kapat="1" aria-label="Notları kapat">${ikon('kapat', 22)}</button></div>
+      <div class="mnot-sekme" role="tablist">
+        <button type="button" class="cip" role="tab" data-mnot-sekme="yazi" aria-pressed="${sekme === 'yazi'}">YAZI</button>
+        <button type="button" class="cip" role="tab" data-mnot-sekme="cizim" aria-pressed="${sekme === 'cizim'}">ÇİZİM${dl.filter(d => (d.cizgiler || []).length).length ? ' · ' + dl.filter(d => (d.cizgiler || []).length).length : ''}</button>
+      </div>
+      <div class="mnot-govde">${sekme === 'yazi' ? yaziHtml(m) : cizimHtml(dl)}<span class="mnot-durum" data-mnot-durum="1">${bekleyen.has(mid) ? 'Kaydediliyor…' : 'Her değişiklik kendiliğinden kaydedilir'}</span></div>`;
+    kok.querySelector('[data-mnot-kapat]').onclick = () => { hepsiniYaz(); if (ops.kapat) ops.kapat(); };
+    const tam = kok.querySelector('[data-mnot-tam]');
+    if (tam) tam.onclick = () => { kok.classList.toggle('tam'); ciz(); };
+    kok.querySelectorAll('[data-mnot-sekme]').forEach(b => b.onclick = () => { sekme = b.dataset.mnotSekme; temizleOnay = false; ciz(); });
+    if (sekme === 'yazi') yaziKur(); else cizimKur();
+  }
+
+  /* --- yazı --- */
+  function yaziHtml(m) {
+    return `<div class="mnot-hizli">${HIZLI.map(h => `<button type="button" class="cip" data-hizli="${esc(h)}">+ ${esc(h.replace(': ', ''))}</button>`).join('')}</div>
+      <label for="mnot-metin" class="gizli-girdi">Mahal notu</label>
+      <textarea id="mnot-metin" placeholder="Örn.&#10;Yapılacak: duvar + tavan boya&#10;Hariç: tavan boyası&#10;Dikkat: kuzey duvarı rutubetli">${esc(m && m.not || '')}</textarea>`;
+  }
+  function yaziKur() {
+    const t = kok.querySelector('#mnot-metin');
+    t.addEventListener('input', () => kaydetGec(mid, { not: t.value }));
+    kok.querySelectorAll('[data-hizli]').forEach(b => b.onclick = () => {
+      const v = t.value;
+      t.value = v + (v && !v.endsWith('\n') ? '\n' : '') + b.dataset.hizli;
+      kaydetGec(mid, { not: t.value });
+      t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    });
+  }
+
+  /* --- çizim --- */
+  function cizimHtml(dl) {
+    const ar = [['ince', 'İnce kalem', 'kalem'], ['kalin', 'Kalın kalem', 'kalem'], ['silgi', 'Silgi', 'silgi']];
+    return `<div class="mnot-araclar">${dl.map((d, i) => `<button type="button" class="cip" data-detay="${esc(d.id)}" aria-pressed="${d.id === detayId}">${esc(d.ad || 'Detay ' + (i + 1))}</button>`).join('')}<button type="button" class="cip" data-detay-yeni="1">${ikon('arti', 18)} Detay</button></div>
+      ${detayId ? `<div class="mnot-araclar">${ar.map(([a, ad, ik]) => `<button type="button" class="cip" data-carac="${a}" aria-pressed="${a === arac}" aria-label="${ad}">${ikon(ik, 18, a === 'kalin' ? 3.4 : 2.2)}${a === 'silgi' ? 'Silgi' : a === 'ince' ? 'İnce' : 'Kalın'}</button>`).join('')}
+        <button type="button" class="cip" data-cgeri="1" aria-label="Geri al" ${gecmis.length ? '' : 'disabled style="opacity:.4"'}>${ikon('geriAl', 18)}</button>
+        <button type="button" class="cip" data-ctemizle="1" style="${temizleOnay ? 'border-color:var(--kirmizi);color:var(--kirmizi)' : ''}">${temizleOnay ? 'EMİN MİSİN? SİL' : 'Temizle'}</button></div>
+        <div class="mnot-tuval" data-tuval="1"><canvas aria-label="Detay çizim alanı"></canvas></div>
+        <span class="not-kucuk">Kalemle çiz. Kalem kullanınca parmak ve avuç çizmez. Ölçüyü rakamla yazmak istersen Yazı sekmesine ekle.</span>`
+      : `<div class="bos"><b>Detay çizimi yok</b>Fotoğrafta anlaşılmayan bir yeri (kesit, birleşim, köşe dönüşü) kalemle kabaca çizmek için <b style="font-size:inherit">+ Detay</b>.</div>`}`;
+  }
+  function cizimKur() {
+    kok.querySelectorAll('[data-detay]').forEach(b => b.onclick = () => { detayId = b.dataset.detay; gecmis = []; temizleOnay = false; ciz(); });
+    kok.querySelector('[data-detay-yeni]').onclick = () => {
+      const dl = detaylar();
+      const d = { id: yeniDetayId(), ad: 'Detay ' + (dl.length + 1), cizgiler: [] };
+      kaydetGec(mid, { detaylar: dl.concat([d]) });
+      detayId = d.id; gecmis = []; temizleOnay = false; ciz();
+    };
+    if (!detayId) return;
+    const d = detaylar().find(x => x.id === detayId);
+    cizgiler = d && Array.isArray(d.cizgiler) ? d.cizgiler.map(c => ({ k: c.k, p: c.p.slice() })) : [];
+    kok.querySelectorAll('[data-carac]').forEach(b => b.onclick = () => { arac = b.dataset.carac; ciz(); });
+    kok.querySelector('[data-cgeri]').onclick = () => { if (!gecmis.length) return; cizgiler = JSON.parse(gecmis.pop()); detayKaydet(); ciz(); };
+    kok.querySelector('[data-ctemizle]').onclick = () => {
+      if (!temizleOnay) { temizleOnay = true; ciz(); setTimeout(() => { if (temizleOnay) { temizleOnay = false; if (kok && sekme === 'cizim') ciz(); } }, 4000); return; }
+      temizleOnay = false;
+      // boş detay sayfası: çizgiler silinir, sayfa listeden de kalkar
+      gecmis.push(JSON.stringify(cizgiler));
+      const dl = detaylar().filter(x => x.id !== detayId);
+      kaydetGec(mid, { detaylar: dl });
+      detayId = dl.length ? dl[0].id : null; gecmis = [];
+      ciz();
+    };
+    const sar = kok.querySelector('[data-tuval]');
+    kanvas = sar.querySelector('canvas'); ctx = kanvas.getContext('2d');
+    if (gozlemci) gozlemci.disconnect();
+    gozlemci = ('ResizeObserver' in window) ? new ResizeObserver(boyutla) : null;
+    if (gozlemci) gozlemci.observe(sar); else setTimeout(boyutla, 0);
+    kanvas.addEventListener('pointerdown', bas);
+    kanvas.addEventListener('pointermove', hareket);
+    kanvas.addEventListener('pointerup', birak);
+    kanvas.addEventListener('pointercancel', birak);
+  }
+  function boyutla() {
+    if (!kanvas) return;
+    const r = kanvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    kanvas.width = Math.max(1, Math.round(r.width * dpr)); kanvas.height = Math.max(1, Math.round(r.height * dpr));
+    tumunuCiz();
+  }
+  const olcek = () => kanvas.width / DW;
+  function cizgiCiz(c) {
+    const o = olcek(), p = c.p;
+    if (p.length < 2) return;
+    ctx.lineWidth = (c.k || 3) * o * 1.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#121212';
+    ctx.beginPath(); ctx.moveTo(p[0] * o, p[1] * o);
+    if (p.length === 2) ctx.lineTo(p[0] * o + 0.1, p[1] * o);
+    for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i] * o, p[i + 1] * o);
+    ctx.stroke();
+  }
+  function tumunuCiz() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, kanvas.width, kanvas.height);
+    cizgiler.forEach(cizgiCiz);
+    if (aktif) cizgiCiz(aktif);
+  }
+  function nokta(e) {
+    const r = kanvas.getBoundingClientRect();
+    return [Math.round(Math.max(0, Math.min(DW, (e.clientX - r.left) / r.width * DW))), Math.round(Math.max(0, Math.min(DH, (e.clientY - r.top) / r.height * DH)))];
+  }
+  function sil(q) {
+    const tol = 22;
+    const kalan = cizgiler.filter(c => { for (let i = 0; i < c.p.length; i += 2) if (Math.hypot(c.p[i] - q[0], c.p[i + 1] - q[1]) < tol) return false; return true; });
+    if (kalan.length !== cizgiler.length) { cizgiler = kalan; tumunuCiz(); return true; }
+    return false;
+  }
+  let silindi = false;
+  function bas(e) {
+    if (e.pointerType === 'pen') kalemGoruldu = true;
+    else if (kalemGoruldu && e.pointerType === 'touch') return; // avuç
+    if (aktif) return;
+    try { kanvas.setPointerCapture(e.pointerId); } catch (er) {}
+    const q = nokta(e);
+    if (arac === 'silgi') { gecmis.push(JSON.stringify(cizgiler)); silindi = sil(q); aktif = { silgi: true, id: e.pointerId, k: 0, p: [] }; return; }
+    aktif = { id: e.pointerId, k: arac === 'kalin' ? 7 : 3, p: q.slice() };
+    tumunuCiz();
+  }
+  function hareket(e) {
+    if (!aktif || e.pointerId !== aktif.id) return;
+    const q = nokta(e);
+    if (aktif.silgi) { if (sil(q)) silindi = true; return; }
+    const p = aktif.p, n = p.length;
+    if (Math.hypot(q[0] - p[n - 2], q[1] - p[n - 1]) < 2) return;
+    if (n >= 4000) return;
+    p.push(q[0], q[1]);
+    // sadece son parçayı çiz (hızlı)
+    const o = olcek();
+    ctx.lineWidth = aktif.k * o * 1.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#121212';
+    ctx.beginPath(); ctx.moveTo(p[n - 2] * o, p[n - 1] * o); ctx.lineTo(q[0] * o, q[1] * o); ctx.stroke();
+  }
+  function birak(e) {
+    if (!aktif || e.pointerId !== aktif.id) return;
+    const a = aktif; aktif = null;
+    if (a.silgi) { if (silindi) { detayKaydet(); ciz(); } else gecmis.pop(); silindi = false; return; }
+    if (cizgiler.length >= 800) { bildir('Bu detay sayfası doldu. Yeni detay aç.', true); tumunuCiz(); return; }
+    gecmis.push(JSON.stringify(cizgiler)); if (gecmis.length > 40) gecmis.shift();
+    cizgiler.push({ k: a.k, p: a.p });
+    detayKaydet();
+    const g = kok && kok.querySelector('[data-cgeri]'); if (g) { g.disabled = false; g.style.opacity = ''; }
+    tumunuCiz();
+  }
+  // Buluttan gelen eski kopya, yazılmayı bekleyen notun üstüne yazmasın
+  const yerelSurum = m => yerel.has(m.id) ? { ...m, ...yerel.get(m.id) } : m;
+  return { ac, kapat, hepsiniYaz, yerelSurum };
+})();
+
+/* ===== Fotoğraf üstünde not alma ===== */
+const Editor = (() => {
+  let f = null, notlar = [], arac = 'hizli', sembolTur = 'priz', secili = null, gecmis = [];
+  let s = 1, tx = 0, ty = 0;
+  let el = {}, isaretciler = new Map(), hareket = null, gecici = null, pinch = null;
+  let kayitZaman = null, kirli = false;
+  // Kalem (S Pen / Apple Pencil) görülünce: kalem çizer, parmak sadece kaydırır/yakınlaştırır, avuç yok sayılır
+  let kalemVar = false, kalemAktif = null;
+
+  const IPUCU = {
+    hizli: 'Ölçünün yerine dokun, rakamı cm yaz (385 = 3,85 m). Sürükle: kaydır.',
+    sec: 'Bir işarete dokun: seç, sürükle, düzenle. Boş yerde sürükle: kaydır. İki parmak: yakınlaştır.',
+    olcu: 'Ölçünün başından sonuna parmağını sürükle, sonra ölçüyü yaz.',
+    bosluk: 'Kapı ya da pencerenin bir köşesinden karşı köşesine sürükle.',
+    not: 'Notun yerine dokun.',
+    sembol: 'Aşağıdan sembolü seç, sonra yerine dokun.',
+    kalem: 'Serbest çiz: işaretlemek istediğin yeri daire içine al.'
+  };
+  const ARACLAR = [['hizli', 'Hızlı'], ['sec', 'Seç'], ['olcu', 'Ölçü'], ['bosluk', 'Boşluk'], ['not', 'Not'], ['sembol', 'Sembol'], ['kalem', 'Kalem']];
+
+  function ac(k, foto_) {
+    if (!foto_) {
+      k.innerHTML = `<div class="bas"><button class="ikon-btn" data-geri="1" aria-label="Geri">${ikon('geri', 26)}</button><div class="baslik"><b>Fotoğraf</b><span>Bulunamadı</span></div></div><div class="govde"><div class="bos">Bu fotoğraf silinmiş olabilir.</div></div>`;
+      k.querySelector('[data-geri]').onclick = () => git('proje');
+      return;
+    }
+    if (f && f.id !== foto_.id && kirli) kaydetSimdi();
+    const ayniFoto = f && f.id === foto_.id;
+    f = { ...foto_ };
+    if (!ayniFoto) { notlar = JSON.parse(JSON.stringify(f.notlar || [])); secili = null; gecmis = []; kirli = false; }
+    const m = mahal(f.mahalId);
+    const fl = mahalFotolari(f.mahalId);
+    k.innerHTML = `
+      <div class="bas">
+        <button class="ikon-btn" type="button" data-geri="1" aria-label="Mahallere dön">${ikon('geri', 26)}</button>
+        <div class="baslik"><b>${esc((m ? m.ad : 'Mahal') + ' · ' + yuzeyAdi(f.yuzey))}</b><span data-alt-baslik="1"></span></div>
+        <button class="ikon-btn" type="button" data-not-ac="1" aria-label="Mahal notları ve çizimler">${ikon('defter', 24)}</button>
+        <button class="ikon-btn" type="button" data-geri-al="1" aria-label="Geri al">${ikon('geriAl', 24)}</button>
+        <button class="ikon-btn" type="button" data-menu="1" aria-label="Yüzey ve fotoğraf ayarları">${ikon('menu', 26)}</button>
+      </div>
+      <div class="araclar" role="toolbar" aria-label="Araçlar">${ARACLAR.map(([a, ad]) => `<button type="button" class="arac" data-arac="${a}" aria-pressed="false">${ikon(a, 22)}${ad}</button>`).join('')}</div>
+      <div class="alt-sembol" data-semboller="1" hidden>${Object.entries(SEMBOLLER).map(([a, ad]) => `<button type="button" class="cip" data-sembol="${a}" aria-pressed="false">${esc(ad)}</button>`).join('')}</div>
+      <div class="orta" data-orta="1"><div class="sahne" data-sahne="1">
+        <div class="katman${f.ref ? '' : ' kroki'}" data-katman="1" style="width:${f.w}px;height:${f.h}px"><img data-img="1" alt="${esc(yuzeyAdi(f.yuzey))} fotoğrafı"${f.ref ? '' : ' hidden'}><svg data-svg="1" viewBox="0 0 ${f.w} ${f.h}" xmlns="http://www.w3.org/2000/svg"></svg></div>
+        <div class="ipucu" data-ipucu="1"></div>
+        <div class="zoom"><button type="button" data-zoom="1.4" aria-label="Yakınlaştır">${ikon('zoomArti', 22)}</button><button type="button" data-zoom="0.7" aria-label="Uzaklaştır">${ikon('zoomEksi', 22)}</button><button type="button" data-sigdir="1" aria-label="Ekrana sığdır">${ikon('sigdir', 22)}</button></div>
+      </div><aside class="mnot" data-mnot="1" hidden></aside></div>
+      <div class="bilgi" data-bilgi="1"></div>
+      <div class="alt" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)">
+        ${f.ref ? `<label for="dosya-kamera" class="btn btn-sari" data-sonraki="1" role="button" tabindex="0" style="cursor:pointer">${ikon('kamera', 24)} SONRAKİ DUVAR</label>` : `<button type="button" class="btn btn-sari" data-sonraki-kroki="1">${ikon('kalem', 24)} SONRAKİ KROKİ</button>`}
+        <button type="button" class="btn btn-siyah" data-bitti="1">BİTTİ</button>
+      </div>`;
+    el = {
+      k, sahne: k.querySelector('[data-sahne]'), katman: k.querySelector('[data-katman]'), img: k.querySelector('[data-img]'),
+      svg: k.querySelector('[data-svg]'), bilgi: k.querySelector('[data-bilgi]'), ipucu: k.querySelector('[data-ipucu]'),
+      altBaslik: k.querySelector('[data-alt-baslik]'), semboller: k.querySelector('[data-semboller]'), geriAl: k.querySelector('[data-geri-al]')
+    };
+    altBaslikYaz();
+    if (f.ref) Depo.fotoURL(f.ref).then(u => { if (u) el.img.src = u; });
+    k.querySelector('[data-geri]').onclick = () => git('proje');
+    k.querySelector('[data-bitti]').onclick = () => git('proje');
+    const sonr = k.querySelector('[data-sonraki]');
+    if (sonr) sonr.addEventListener('click', () => { if (kirli) kaydetSimdi(); S.bekleyenFoto = { mid: f.mahalId, otomatik: true }; const inp = document.getElementById('dosya-kamera'); if (inp) inp.value = ''; });
+    const sonrK = k.querySelector('[data-sonraki-kroki]');
+    if (sonrK) sonrK.onclick = async () => {
+      if (kirli) kaydetSimdi();
+      const mid = f.mahalId, m = mahal(mid), y = sonrakiDuvar(mid), v = yuzeyVarsayilanOlcu(m, y);
+      const fid = await fotoKaydet({ mid, y, gen: v.gen, yuk: v.yuk, yuk2: null, bf: BOS_KROKI() });
+      git('editor', { fid });
+      bildir(`${yuzeyAdi(y)} kroki sayfası açıldı. Yanlışsa alttaki Yüzey düğmesinden değiştir.`);
+    };
+    el.geriAl.onclick = geriAl;
+    k.querySelector('[data-menu]').onclick = menuSayfasi;
+    k.querySelector('[data-not-ac]').onclick = () => notPaneli(!notAcik);
+    notPaneli(notAcik, true);
+    k.querySelectorAll('[data-arac]').forEach(b => b.onclick = () => { arac = b.dataset.arac; secili = null; if (arac !== 'hizli') tusKapat(); guncelle(); });
+    tus = null;
+    k.querySelectorAll('[data-sembol]').forEach(b => b.onclick = () => { sembolTur = b.dataset.sembol; guncelle(); });
+    k.querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => { const r = el.sahne.getBoundingClientRect(); yakinlas(Number(b.dataset.zoom), r.width / 2, r.height / 2); });
+    k.querySelector('[data-sigdir]').onclick = sigdir;
+    const sh = el.sahne;
+    sh.addEventListener('pointerdown', isaretBas);
+    sh.addEventListener('pointermove', isaretHareket);
+    sh.addEventListener('pointerup', isaretBirak);
+    sh.addEventListener('pointercancel', isaretBirak);
+    sh.addEventListener('wheel', e => { e.preventDefault(); const r = sh.getBoundingClientRect(); yakinlas(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    requestAnimationFrame(() => { sigdir(); guncelle(); });
+    window.removeEventListener('resize', sigdir);
+    window.addEventListener('resize', sigdir);
+  }
+  function altBaslikYaz() {
+    if (!f || !el.altBaslik) return;
+    const fl = mahalFotolari(f.mahalId);
+    const sira = fl.findIndex(x => x.id === f.id) + 1;
+    el.altBaslik.textContent = [f.gen != null && f.yuk != null ? (egimli(f) ? `${fmtO(f.gen)} × ${fmtO(f.yuk)}/${fmtO(f.yuk2)} m eğimli` : `${fmtO(f.gen)} × ${fmtO(f.yuk)} m`) : (f.gen != null ? `genişlik ${fmtO(f.gen)} m · yükseklik yok` : f.yuk != null ? `yükseklik ${fmtO(f.yuk)} m · genişlik yok` : 'ölçü yok'), `${f.ref ? 'foto' : 'kroki'} ${sira}/${fl.length}`].join(' · ');
+  }
+  // Mahal not paneli: geniş yatay ekranda fotoğrafın sağında, dar ekranda alttan açılır
+  let notAcik = (() => { try { const v = localStorage.getItem('abm-not-acik'); if (v != null) return v === '1'; } catch (e) {} return window.matchMedia && window.matchMedia('(orientation: landscape) and (min-width: 900px)').matches; })();
+  function notPaneli(acik, ilk) {
+    notAcik = acik;
+    if (!ilk) { try { localStorage.setItem('abm-not-acik', acik ? '1' : '0'); } catch (e) {} }
+    const a = el.k && el.k.querySelector('[data-mnot]');
+    if (!a || !f) return;
+    const b = el.k.querySelector('[data-not-ac]');
+    if (b) b.setAttribute('aria-pressed', String(acik));
+    if (acik) { a.hidden = false; NotPanel.ac(a, f.mahalId, { kapat: () => notPaneli(false) }); }
+    else { NotPanel.kapat(); a.hidden = true; a.innerHTML = ''; a.className = 'mnot'; }
+    requestAnimationFrame(sigdir);
+  }
+  function kapat() {
+    NotPanel.kapat();
+    tusKapat();
+    window.removeEventListener('resize', sigdir);
+    if (kirli) kaydetSimdi();
+    f = null;
+  }
+  function disGuncelleme(yeni) {
+    if (!f || !yeni || yeni.id !== f.id) return;
+    if (kirli || kayitZaman) return;
+    if (JSON.stringify(yeni.notlar || []) === JSON.stringify(notlar) && yeni.yuzey === f.yuzey && yeni.gen === f.gen && yeni.yuk === f.yuk) return;
+    f = { ...yeni }; notlar = JSON.parse(JSON.stringify(f.notlar || [])); secili = null;
+    guncelle();
+  }
+
+  /* --- görünüm --- */
+  function uygula() { el.katman.style.transform = `translate(${tx}px,${ty}px) scale(${s})`; cizSvg(); }
+  function sigdir() {
+    if (!el.sahne || !f) return;
+    const r = el.sahne.getBoundingClientRect();
+    s = Math.min(r.width / f.w, r.height / f.h) * 0.98;
+    tx = (r.width - f.w * s) / 2; ty = (r.height - f.h * s) / 2;
+    uygula();
+  }
+  function yakinlas(k, cx, cy) {
+    const yeni = Math.max(0.05, Math.min(8, s * k));
+    const g = yeni / s;
+    tx = cx - (cx - tx) * g; ty = cy - (cy - ty) * g; s = yeni;
+    uygula();
+  }
+  function goruntuNok(e) {
+    const r = el.sahne.getBoundingClientRect();
+    return [(e.clientX - r.left - tx) / s, (e.clientY - r.top - ty) / s];
+  }
+
+  /* --- çizim --- */
+  const u = () => 1 / s;
+  function etiket(x, y, metin, secik) {
+    const fs = 15 * u(), p = 5 * u();
+    const w = (metin.length * 0.58 * fs) + p * 2, h = fs + p * 2;
+    return `<g><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="${3 * u()}" fill="${secik ? '#FFFFFF' : '#FFC20E'}" stroke="#121212" stroke-width="${1.6 * u()}"/>
+      <text x="${x}" y="${y + fs * 0.35}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="${fs}" fill="#121212">${esc(metin)}</text></g>`;
+  }
+  const cizgi = (d, secik) => `<path d="${d}" fill="none" stroke="#121212" stroke-width="${6 * u()}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${secik ? '#FFFFFF' : '#FFC20E'}" stroke-width="${3 * u()}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const SEMBOL_CIZIM = {
+    priz: '<path d="M-3 -4v8M3 -4v8"/>', anahtar: '<rect x="-4" y="-5" width="8" height="10" rx="1"/><path d="M0 -3v4"/>',
+    lamba: '<circle r="3.5"/><path d="M0 -8v2M0 6v2M-8 0h2M6 0h2"/>', kolon: '<rect x="-5" y="-5" width="10" height="10"/><path d="M-5 -5l10 10M5 -5l-10 10"/>',
+    su: '<path d="M0 -6c3 4 4 6 4 8a4 4 0 0 1-8 0c0-2 1-4 4-8z"/>', gider: '<circle r="5"/><circle r="1.6"/>',
+    petek: '<path d="M-5 -5v10M0 -5v10M5 -5v10M-6 5h12"/>', catlak: '<path d="M-6 -6l3 4-3 2 5 3-2 3 4 0"/>'
+  };
+  function ogeCiz(n, i) {
+    const sc = i === secili;
+    if (n.t === 'olcu') {
+      const [ax, ay] = n.a, [bx, by] = n.b;
+      const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, nx = -dy / L * 9 * u(), ny = dx / L * 9 * u();
+      return `<g data-i="${i}">${cizgi(`M${ax} ${ay}L${bx} ${by}M${ax - nx} ${ay - ny}L${ax + nx} ${ay + ny}M${bx - nx} ${by - ny}L${bx + nx} ${by + ny}`, sc)}${etiket((ax + bx) / 2, (ay + by) / 2, n.v ? n.v : '?', sc)}</g>`;
+    }
+    if (n.t === 'bosluk') {
+      const [x, y, w, h] = n.r;
+      const tur = BOSLUK_TUR[n.tur] || BOSLUK_TUR.pencere;
+      const et = `${n.kod || tur.kod} ${n.gen != null ? fmt(n.gen) : '?'}×${n.yuk != null ? fmt(n.yuk) : '?'}`;
+      return `<g data-i="${i}">${cizgi(`M${x} ${y}h${w}v${h}h${-w}z`, sc)}${etiket(x + w / 2, y + h / 2, et, sc)}${sc ? [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([cx, cy]) => `<rect x="${cx - 7 * u()}" y="${cy - 7 * u()}" width="${14 * u()}" height="${14 * u()}" fill="#fff" stroke="#121212" stroke-width="${2 * u()}"/>`).join('') : ''}</g>`;
+    }
+    if (n.t === 'not') {
+      const [x, y] = n.p;
+      const kisa = (n.metin || '').length > 26 ? n.metin.slice(0, 25) + '…' : (n.metin || '');
+      const fs = 15 * u(), p = 6 * u(), w = kisa.length * 0.52 * fs + p * 2, h = fs + p * 2;
+      return `<g data-i="${i}"><circle cx="${x}" cy="${y}" r="${8 * u()}" fill="${sc ? '#fff' : '#FFC20E'}" stroke="#121212" stroke-width="${2.5 * u()}"/>
+        <rect x="${x + 12 * u()}" y="${y - h / 2}" width="${w}" height="${h}" rx="${3 * u()}" fill="#121212"/>
+        <text x="${x + 12 * u() + p}" y="${y + fs * 0.35}" font-family="Barlow, Arial, sans-serif" font-weight="600" font-size="${fs}" fill="#FFFFFF">${esc(kisa)}</text></g>`;
+    }
+    if (n.t === 'sembol') {
+      const [x, y] = n.p;
+      return `<g data-i="${i}" transform="translate(${x} ${y}) scale(${1.3 * u()})"><circle r="12" fill="${sc ? '#fff' : '#FFC20E'}" stroke="#121212" stroke-width="2"/><g fill="none" stroke="#121212" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SEMBOL_CIZIM[n.s] || ''}</g></g>`;
+    }
+    if (n.t === 'kalem' && n.pts && n.pts.length > 1) {
+      return `<g data-i="${i}">${cizgi('M' + n.pts.map(p => p.join(' ')).join('L'), sc)}</g>`;
+    }
+    return '';
+  }
+  function cizSvg() {
+    if (!el.svg) return;
+    let h = notlar.map(ogeCiz).join('');
+    if (gecici) {
+      if (gecici.t === 'olcu') h += ogeCiz({ t: 'olcu', a: gecici.a, b: gecici.b, v: '' }, -1);
+      if (gecici.t === 'bosluk') { const r = kutu(gecici.a, gecici.b); h += `<g>${cizgi(`M${r[0]} ${r[1]}h${r[2]}v${r[3]}h${-r[2]}z`, false)}</g>`; }
+      if (gecici.t === 'kalem' && gecici.pts.length > 1) h += cizgi('M' + gecici.pts.map(p => p.join(' ')).join('L'), false);
+    }
+    if (tus) {
+      const [x, y] = tus.p, R = 16 * u();
+      h += `<g><circle cx="${x}" cy="${y}" r="${R}" fill="rgba(255,194,14,.35)" stroke="#121212" stroke-width="${3 * u()}"/><path d="M${x - R * 1.8} ${y}h${R * 1.2}M${x + R * 0.6} ${y}h${R * 1.2}M${x} ${y - R * 1.8}v${R * 1.2}M${x} ${y + R * 0.6}v${R * 1.2}" stroke="#121212" stroke-width="${3 * u()}" stroke-linecap="round"/></g>`;
+    }
+    el.svg.innerHTML = h;
+  }
+  const kutu = (a, b) => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])];
+
+  /* --- arayüz güncelle --- */
+  function guncelle() {
+    if (!el.k) return;
+    el.k.querySelectorAll('[data-arac]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.arac === arac)));
+    el.semboller.hidden = arac !== 'sembol';
+    el.k.querySelectorAll('[data-sembol]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sembol === sembolTur)));
+    el.ipucu.textContent = IPUCU[arac] + (kalemVar && arac !== 'sec' ? ' Kalemle çiz; parmak kaydırır.' : '');
+    el.geriAl.disabled = !gecmis.length;
+    cizBilgi();
+    cizSvg();
+    requestAnimationFrame(() => { if (el.sahne) { const r = el.sahne.getBoundingClientRect(); if (r.width && (tx > r.width || ty > r.height)) sigdir(); } });
+  }
+  function yuzeyNet() {
+    if (f.gen == null || f.yuk == null) return null;
+    const dus = notlar.filter(n => n.t === 'bosluk' && n.dusBoya !== false && n.gen != null && n.yuk != null).reduce((a, n) => a + n.gen * n.yuk, 0);
+    const brut = yuzeyAlan(f);
+    return { brut, dus, net: brut - dus };
+  }
+  function cizBilgi() {
+    const n = secili != null ? notlar[secili] : null;
+    if (!n) {
+      const y = yuzeyNet();
+      const say = { olcu: 0, bosluk: 0, not: 0, sembol: 0, kalem: 0 };
+      notlar.forEach(x => { say[x.t] = (say[x.t] || 0) + 1; });
+      el.bilgi.innerHTML = `<span class="metin"><b>${esc(yuzeyAdi(f.yuzey))} ${y ? '· net ' + fmt(y.net) + ' m²' : ''}</b>
+        <span>${y ? `${yuzeyHesapMetni(f)} = ${fmt(y.brut)}${y.dus ? ' − boşluk ' + fmt(y.dus) : ''} · ` : 'Yüzey ölçüsü girilmedi · '}${say.olcu} ölçü, ${say.bosluk} boşluk, ${say.not} not</span></span>
+        <button type="button" class="btn btn-kucuk" data-yuzey="1" style="min-height:48px;font-size:16px">${ikon('duzenle', 18)} Yüzey</button>`;
+      el.bilgi.querySelector('[data-yuzey]').onclick = yuzeySayfasiDuzenle;
+      return;
+    }
+    let kod = '', b = '', a = '';
+    if (n.t === 'olcu') { kod = 'Ö'; b = `Ölçü ${n.v || '?'}${n.v ? ' m' : ''}`; a = n.etiket || 'Uzunluk'; }
+    if (n.t === 'bosluk') { const t = BOSLUK_TUR[n.tur] || BOSLUK_TUR.pencere; kod = n.kod || t.kod; b = `${t.ad} ${n.gen != null ? fmt(n.gen) : '?'} × ${n.yuk != null ? fmt(n.yuk) : '?'}`; a = [n.sol != null ? 'soldan ' + fmt(n.sol) : 'soldan ?', (n.tur === 'pencere' || n.tur === 'balkon') && n.den != null ? 'denizlik ' + fmt(n.den) : '', n.dusBoya !== false ? 'boyadan düşülür' : 'boyadan düşülmez'].filter(Boolean).join(' · '); }
+    if (n.t === 'not') { kod = 'N'; b = n.metin || 'Not'; a = 'Not'; }
+    if (n.t === 'sembol') { kod = 'S'; b = SEMBOLLER[n.s] || 'Sembol'; a = 'Sembol'; }
+    if (n.t === 'kalem') { kod = '✎'; b = 'Serbest çizim'; a = ''; }
+    el.bilgi.innerHTML = `<span class="kod">${esc(kod)}</span><span class="metin"><b>${esc(b)}</b><span>${esc(a)}</span></span>
+      ${n.t === 'olcu' || n.t === 'bosluk' || n.t === 'not' ? `<button type="button" class="btn btn-kucuk" data-duz="1" style="min-height:48px;font-size:16px;padding:0 10px">${ikon('duzenle', 18)} Düzenle</button>` : ''}
+      <button type="button" class="btn btn-kucuk btn-kirmizi" data-sil="1" aria-label="Sil" style="min-height:48px;padding:0 10px">${ikon('sil', 20)}</button>`;
+    const d = el.bilgi.querySelector('[data-duz]');
+    if (d) d.onclick = () => duzenle(secili);
+    el.bilgi.querySelector('[data-sil]').onclick = () => { degistir(() => { notlar.splice(secili, 1); secili = null; }); };
+  }
+
+  /* --- değişiklik ve kayıt --- */
+  function degistir(fn) {
+    gecmis.push(JSON.stringify(notlar));
+    if (gecmis.length > 60) gecmis.shift();
+    fn();
+    kirli = true;
+    kaydetGecikmeli();
+    guncelle();
+  }
+  function geriAl() {
+    if (!gecmis.length) return;
+    notlar = JSON.parse(gecmis.pop());
+    secili = null; kirli = true; kaydetGecikmeli(); guncelle();
+  }
+  function kaydetGecikmeli() { clearTimeout(kayitZaman); kayitZaman = setTimeout(kaydetSimdi, 700); }
+  function kaydetSimdi() {
+    clearTimeout(kayitZaman); kayitZaman = null;
+    if (!f) return;
+    const guncel = foto(f.id); if (guncel && guncel.ref) f.ref = guncel.ref;
+    const yuv = v => Array.isArray(v) ? v.map(yuv) : (typeof v === 'number' ? Math.round(v * 10) / 10 : (v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, (k === 'gen' || k === 'yuk' || k === 'den' || k === 'sol' || k === 'deger') ? x : yuv(x)])) : v));
+    const veri = { ...f, notlar: yuv(notlar) };
+    delete veri.id;
+    const i = S.fotolar.findIndex(x => x.id === f.id);
+    if (i >= 0) S.fotolar[i] = { id: f.id, ...veri };
+    kirli = false;
+    kaydet(`projeler/${S.pid}/fotolar/${f.id}`, veri);
+  }
+
+  /* --- dokunma --- */
+  function isabet(p) {
+    const tol = 22 * u();
+    for (let i = notlar.length - 1; i >= 0; i--) {
+      const n = notlar[i];
+      if (n.t === 'olcu' && segUzak(p, n.a, n.b) < tol) return i;
+      if (n.t === 'bosluk') { const [x, y, w, h] = n.r; if (p[0] > x - tol && p[0] < x + w + tol && p[1] > y - tol && p[1] < y + h + tol) return i; }
+      if ((n.t === 'not' || n.t === 'sembol') && Math.hypot(p[0] - n.p[0], p[1] - n.p[1]) < tol * 1.4) return i;
+      if (n.t === 'kalem' && n.pts) for (let j = 1; j < n.pts.length; j++) if (segUzak(p, n.pts[j - 1], n.pts[j]) < tol) return i;
+    }
+    return null;
+  }
+  function segUzak(p, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2));
+    return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+  }
+  function kaydirOge(n, dx, dy) {
+    if (n.t === 'olcu') { n.a = [n.a[0] + dx, n.a[1] + dy]; n.b = [n.b[0] + dx, n.b[1] + dy]; }
+    if (n.t === 'bosluk') n.r = [n.r[0] + dx, n.r[1] + dy, n.r[2], n.r[3]];
+    if (n.t === 'not' || n.t === 'sembol') n.p = [n.p[0] + dx, n.p[1] + dy];
+    if (n.t === 'kalem') n.pts = n.pts.map(p => [p[0] + dx, p[1] + dy]);
+  }
+  function tutamak(n, p) {
+    const tol = 24 * u();
+    if (n.t === 'olcu') { if (Math.hypot(p[0] - n.a[0], p[1] - n.a[1]) < tol) return 'a'; if (Math.hypot(p[0] - n.b[0], p[1] - n.b[1]) < tol) return 'b'; }
+    if (n.t === 'bosluk') {
+      const [x, y, w, h] = n.r;
+      const k = [['ks', x, y], ['ku', x + w, y], ['as', x, y + h], ['au', x + w, y + h]];
+      for (const [ad, cx, cy] of k) if (Math.hypot(p[0] - cx, p[1] - cy) < tol) return ad;
+    }
+    return null;
+  }
+  function yapis(a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    const aci = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+    if (aci < 6 || aci > 174) return [b[0], a[1]];
+    if (Math.abs(aci - 90) < 6) return [a[0], b[1]];
+    return b;
+  }
+  const sinirla = p => [Math.max(0, Math.min(f.w, p[0])), Math.max(0, Math.min(f.h, p[1]))];
+
+  function isaretBas(e) {
+    if (e.button != null && e.button > 0) return;
+    const kalemle = e.pointerType === 'pen';
+    if (kalemle) {
+      if (!kalemVar) { kalemVar = true; guncelle(); }
+      // avuç/parmakla başlamış kaydırma veya yakınlaştırmayı bırak, kaleme geç
+      isaretciler.clear(); hareket = null; pinch = null; gecici = null;
+      kalemAktif = e.pointerId;
+    } else if (kalemAktif != null) {
+      return; // kalem çizerken ekrana değen avuç
+    }
+    try { el.sahne.setPointerCapture(e.pointerId); } catch (er) { /* önemsiz */ }
+    isaretciler.set(e.pointerId, [e.clientX, e.clientY]);
+    if (!kalemle && kalemVar && arac !== 'sec' && isaretciler.size === 1) {
+      hareket = { tip: 'kaydir', son: [e.clientX, e.clientY] };
+      return;
+    }
+    if (!kalemle && isaretciler.size === 2) {
+      gecici = null; hareket = null;
+      const [p1, p2] = [...isaretciler.values()];
+      const r = el.sahne.getBoundingClientRect();
+      pinch = { d: Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), mx: (p1[0] + p2[0]) / 2 - r.left, my: (p1[1] + p2[1]) / 2 - r.top };
+      cizSvg();
+      return;
+    }
+    if (isaretciler.size > 2) return;
+    const p = goruntuNok(e);
+    if (arac === 'hizli') {
+      hareket = { tip: 'kaydir', son: [e.clientX, e.clientY], bas: [e.clientX, e.clientY], hizliP: sinirla(p) };
+      return;
+    }
+    if (arac === 'sec') {
+      if (secili != null) {
+        const t = tutamak(notlar[secili], p);
+        if (t) { gecmis.push(JSON.stringify(notlar)); hareket = { tip: 'tutamak', t, bas: p }; return; }
+      }
+      const i = isabet(p);
+      if (i != null) {
+        secili = i; gecmis.push(JSON.stringify(notlar));
+        hareket = { tip: 'tasi', son: p, oynadi: false };
+        guncelle();
+        return;
+      }
+      if (secili != null) { secili = null; guncelle(); }
+      hareket = { tip: 'kaydir', son: [e.clientX, e.clientY] };
+      return;
+    }
+    const q = sinirla(p);
+    if (arac === 'olcu') gecici = { t: 'olcu', a: q, b: q };
+    if (arac === 'bosluk') gecici = { t: 'bosluk', a: q, b: q };
+    if (arac === 'kalem') gecici = { t: 'kalem', pts: [q.map(v => Math.round(v * 10) / 10)] };
+    if (arac === 'not' || arac === 'sembol') gecici = { t: 'dokun', p: q, bas: [e.clientX, e.clientY] };
+    cizSvg();
+  }
+  function isaretHareket(e) {
+    if (!isaretciler.has(e.pointerId)) return;
+    isaretciler.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && isaretciler.size >= 2) {
+      const [p1, p2] = [...isaretciler.values()];
+      const r = el.sahne.getBoundingClientRect();
+      const d = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]);
+      const mx = (p1[0] + p2[0]) / 2 - r.left, my = (p1[1] + p2[1]) / 2 - r.top;
+      tx += mx - pinch.mx; ty += my - pinch.my;
+      if (pinch.d > 10) yakinlas(d / pinch.d, mx, my); else uygula();
+      pinch = { d, mx, my };
+      return;
+    }
+    const p = goruntuNok(e);
+    if (hareket) {
+      if (hareket.tip === 'kaydir') { tx += e.clientX - hareket.son[0]; ty += e.clientY - hareket.son[1]; hareket.son = [e.clientX, e.clientY]; uygula(); return; }
+      const n = notlar[secili];
+      if (!n) return;
+      if (hareket.tip === 'tasi') { kaydirOge(n, p[0] - hareket.son[0], p[1] - hareket.son[1]); hareket.son = p; hareket.oynadi = true; cizSvg(); return; }
+      if (hareket.tip === 'tutamak') {
+        const q = sinirla(p);
+        if (n.t === 'olcu') { if (hareket.t === 'a') n.a = yapis(n.b, q); else n.b = yapis(n.a, q); }
+        if (n.t === 'bosluk') {
+          let [x, y, w, h] = n.r; let x2 = x + w, y2 = y + h;
+          if (hareket.t[0] === 'k') y = q[1]; else y2 = q[1];
+          if (hareket.t[1] === 's') x = q[0]; else x2 = q[0];
+          n.r = kutu([x, y], [x2, y2]);
+        }
+        hareket.oynadi = true; cizSvg(); return;
+      }
+    }
+    if (!gecici) return;
+    const q = sinirla(p);
+    if (gecici.t === 'olcu') gecici.b = yapis(gecici.a, q);
+    if (gecici.t === 'bosluk') gecici.b = q;
+    if (gecici.t === 'kalem') { const son = gecici.pts[gecici.pts.length - 1]; if (Math.hypot(q[0] - son[0], q[1] - son[1]) > 3 * u()) gecici.pts.push(q.map(v => Math.round(v * 10) / 10)); }
+    cizSvg();
+  }
+  function isaretBirak(e) {
+    if (!isaretciler.has(e.pointerId)) return;
+    isaretciler.delete(e.pointerId);
+    if (e.pointerId === kalemAktif) kalemAktif = null;
+    if (pinch) { if (isaretciler.size < 2) pinch = null; return; }
+    if (hareket) {
+      const h = hareket; hareket = null;
+      if ((h.tip === 'tasi' || h.tip === 'tutamak')) {
+        if (h.oynadi) { kirli = true; kaydetGecikmeli(); guncelle(); }
+        else gecmis.pop();
+      }
+      if (h.tip === 'kaydir' && h.hizliP && Math.hypot(e.clientX - h.bas[0], e.clientY - h.bas[1]) < 12) tusAc(h.hizliP);
+      return;
+    }
+    const g = gecici; gecici = null;
+    if (!g) return;
+    const min = 14 * u();
+    if (g.t === 'olcu') {
+      if (Math.hypot(g.b[0] - g.a[0], g.b[1] - g.a[1]) < min) { cizSvg(); return; }
+      olcuSayfasi({ t: 'olcu', a: g.a, b: g.b, v: '' }, null);
+    } else if (g.t === 'bosluk') {
+      const r = kutu(g.a, g.b);
+      if (r[2] < min || r[3] < min) { cizSvg(); return; }
+      boslukSayfasi({ t: 'bosluk', r, tur: 'pencere' }, null);
+    } else if (g.t === 'kalem') {
+      if (g.pts.length > 1) degistir(() => notlar.push({ t: 'kalem', pts: g.pts.slice(0, 800) }));
+    } else if (g.t === 'dokun') {
+      if (Math.hypot(e.clientX - g.bas[0], e.clientY - g.bas[1]) > 12) { cizSvg(); return; }
+      if (arac === 'not') notSayfasi({ t: 'not', p: g.p, metin: '' }, null);
+      if (arac === 'sembol') degistir(() => notlar.push({ t: 'sembol', p: g.p, s: sembolTur }));
+    }
+    cizSvg();
+  }
+
+  /* --- sayfalar --- */
+  function duzenle(i) {
+    const n = notlar[i];
+    if (n.t === 'olcu') olcuSayfasi({ ...n }, i);
+    if (n.t === 'bosluk') boslukSayfasi({ ...n }, i);
+    if (n.t === 'not') notSayfasi({ ...n }, i);
+  }
+  function ekleVeyaYaz(n, i) {
+    degistir(() => { if (i == null) { notlar.push(n); secili = null; } else notlar[i] = n; });
+  }
+  function olcuSayfasi(n, i) {
+    const oneriler = [];
+    if (f.gen != null) oneriler.push([cmG(f.gen), duvarMi(f.yuzey) ? 'duvar genişliği' : 'en']);
+    if (f.yuk != null) oneriler.push([cmG(f.yuk), duvarMi(f.yuzey) ? 'yükseklik' : 'boy']);
+    sayfaAc(`${sayfaBas(i == null ? 'Ölçü' : 'Ölçüyü düzenle')}
+      <label class="alan" for="o-v"><span class="etiket">Ölçü (cm)</span><input id="o-v" type="text" inputmode="decimal" placeholder="Örn. 385" value="${esc(n.deger != null ? cmG(n.deger) : '')}"></label>
+      ${oneriler.length ? `<div class="cipler">${oneriler.map(([v, ad]) => `<button type="button" class="cip" data-oneri="${esc(v)}">${esc(v)} cm · ${esc(ad)}</button>`).join('')}</div>` : ''}
+      <label class="alan" for="o-e"><span class="etiket">Açıklama (isteğe bağlı)</span><input id="o-e" class="yazi" type="text" placeholder="Örn. kiriş altı, niş derinliği" value="${esc(n.etiket || '')}"></label>
+      <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`,
+      s_ => {
+        const inp = s_.querySelector('#o-v');
+        setTimeout(() => inp.focus(), 60);
+        s_.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); cizSvg(); };
+        s_.querySelectorAll('[data-oneri]').forEach(b => b.onclick = () => { inp.value = b.dataset.oneri; });
+        s_.querySelector('[data-kaydet]').onclick = () => {
+          const v = cmOku(inp.value);
+          n.v = v == null ? '' : fmtO(v); n.deger = v; n.etiket = s_.querySelector('#o-e').value.trim();
+          sayfaKapat();
+          if (n.rol && v != null) { f[n.rol] = v; altBaslikYaz(); }
+          ekleVeyaYaz(n, i);
+        };
+        inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') s_.querySelector('[data-kaydet]').click(); });
+      });
+  }
+  function sonrakiKod(tur, haricI) {
+    const on = (BOSLUK_TUR[tur] || BOSLUK_TUR.pencere).kod;
+    let m = 0;
+    S.fotolar.filter(x => x.mahalId === f.mahalId).forEach(x => (x.id === f.id ? notlar : (x.notlar || [])).forEach((n, j) => {
+      if (n.t === 'bosluk' && n.kod && n.kod.startsWith(on) && !(x.id === f.id && j === haricI)) m = Math.max(m, Number(n.kod.slice(on.length)) || 0);
+    }));
+    return on + (m + 1);
+  }
+  function boslukSayfasi(n, i) {
+    let tur = n.tur || 'pencere';
+    const ciz_ = () => {
+      const denizlikli = tur === 'pencere' || tur === 'balkon';
+      const kapiBoyaVars = n.kapiBoya != null ? n.kapiBoya : (tur === 'kapi' || tur === 'balkon');
+      return `${sayfaBas(i == null ? 'Boşluk ekle' : 'Boşluğu düzenle')}
+        <div class="izgara4" role="group" aria-label="Boşluk türü">${Object.entries(BOSLUK_TUR).map(([a, t]) => `<button type="button" class="cip" data-tur="${a}" aria-pressed="${a === tur}" style="justify-content:center;padding:0 4px">${esc(a === 'balkon' ? 'Balkon k.' : t.ad)}</button>`).join('')}</div>
+        <div class="izgara3">
+          <label class="alan" for="b-gen"><span class="not-kucuk">GENİŞLİK</span><input id="b-gen" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(n.gen))}"></label>
+          <label class="alan" for="b-yuk"><span class="not-kucuk">YÜKSEKLİK</span><input id="b-yuk" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(n.yuk))}"></label>
+          <label class="alan" for="b-sol"><span class="not-kucuk">SOLDAN</span><input id="b-sol" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(n.sol))}"></label>
+        </div>
+        ${denizlikli ? `<label class="alan" for="b-den" style="max-width:33%"><span class="not-kucuk">DENİZLİK</span><input id="b-den" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(n.den != null ? n.den : (tur === 'pencere' ? 0.9 : null)))}"></label>` : ''}
+        <span class="not-kucuk" style="margin-top:-6px">Tüm ölçüler cm. Soldan: duvarın sol köşesinden boşluğun kenarına. Çizimde yeri buna göre konur.</span>
+        <div style="display:flex;flex-direction:column;border-top:1.5px solid var(--cizgi)">
+          <span class="etiket" style="padding:8px 0 2px">Metraja etkisi</span>
+          <label class="onay" for="b-d1"><input id="b-d1" type="checkbox" ${n.dusBoya !== false ? 'checked' : ''}><span>Duvar boyasından düş</span></label>
+          <label class="onay" for="b-d2"><input id="b-d2" type="checkbox" ${kapiBoyaVars ? 'checked' : ''}><span>${tur === 'pencere' ? 'Pencere doğraması boyanacak' : 'Kapı boyası kalemine ekle'}</span></label>
+        </div>
+        <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`;
+    };
+    const oku_ = s_ => {
+      const g = id => s_.querySelector(id);
+      n.gen = cmOku(g('#b-gen').value); n.yuk = cmOku(g('#b-yuk').value); n.sol = cmOku(g('#b-sol').value);
+      n.den = g('#b-den') ? cmOku(g('#b-den').value) : null;
+      n.dusBoya = g('#b-d1').checked; n.kapiBoya = g('#b-d2').checked;
+    };
+    const kur = s_ => {
+      s_.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); cizSvg(); };
+      s_.querySelectorAll('[data-tur]').forEach(b => b.onclick = () => { oku_(s_); tur = b.dataset.tur; n.kapiBoya = null; if (tur !== 'pencere' && n.den === 0.9) n.den = null; sayfaAc(ciz_(), kur); });
+      s_.querySelector('[data-kaydet]').onclick = () => {
+        oku_(s_);
+        if (n.tur !== tur || !n.kod) n.kod = sonrakiKod(tur, i);
+        n.tur = tur;
+        sayfaKapat(); ekleVeyaYaz(n, i);
+      };
+      if (i == null) setTimeout(() => s_.querySelector('#b-gen').focus(), 60);
+    };
+    sayfaAc(ciz_(), kur);
+  }
+  function notSayfasi(n, i) {
+    sayfaAc(`${sayfaBas(i == null ? 'Not' : 'Notu düzenle')}
+      <label class="alan" for="n-m"><span class="etiket">Not</span><textarea id="n-m" rows="3" placeholder="Örn. sıva kabarmış, priz değişecek">${esc(n.metin || '')}</textarea></label>
+      <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`,
+      s_ => {
+        const t = s_.querySelector('#n-m');
+        setTimeout(() => t.focus(), 60);
+        s_.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); cizSvg(); };
+        s_.querySelector('[data-kaydet]').onclick = () => {
+          const m = t.value.trim();
+          sayfaKapat();
+          if (!m) { cizSvg(); return; }
+          n.metin = m; ekleVeyaYaz(n, i);
+        };
+      });
+  }
+  function yuzeySayfasiDuzenle() {
+    const m = mahal(f.mahalId);
+    let y = f.yuzey;
+    const html = () => {
+      const liste = YUZEYLER_TEMEL.slice();
+      mahalFotolari(f.mahalId).map(x => x.yuzey).filter(x => duvarMi(x) && !liste.includes(x)).forEach(x => liste.splice(liste.indexOf('Tavan'), 0, x));
+      if (duvarMi(y) && !liste.includes(y)) liste.splice(liste.indexOf('Tavan'), 0, y);
+      const v = y === f.yuzey ? { gen: f.gen, yuk: f.yuk } : yuzeyVarsayilanOlcu(m, y);
+      return `${sayfaBas('Yüzey bilgisi')}
+        <div class="alan"><span class="etiket">Yüzey · ölçüler cm</span><div class="cipler">${liste.map(x => `<button type="button" class="cip" data-y="${esc(x)}" aria-pressed="${x === y}">${esc(yuzeyAdi(x))}</button>`).join('')}<button type="button" class="cip" data-duvar-ekle="1">${ikon('arti', 18)} Duvar</button></div></div>
+        <div class="izgara2">
+          <label class="alan" for="yd-gen"><span class="not-kucuk">${duvarMi(y) ? 'GENİŞLİK' : 'EN'}</span><input id="yd-gen" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(v.gen))}"></label>
+          <label class="alan" for="yd-yuk"><span class="not-kucuk">${duvarMi(y) ? 'YÜKSEKLİK (SOL)' : 'BOY'}</span><input id="yd-yuk" type="text" inputmode="decimal" placeholder="cm" value="${esc(cmG(v.yuk))}"></label>
+        </div>
+        ${duvarMi(y) ? `<label class="alan" for="yd-yuk2"><span class="not-kucuk">SAĞ YÜKSEKLİK · sadece eğimli duvarda (merdiven)</span><input id="yd-yuk2" type="text" inputmode="decimal" placeholder="Düz duvarda boş bırak" value="${esc(y === f.yuzey ? cmG(f.yuk2) : '')}"></label>` : ''}
+        <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`;
+    };
+    const kur = s_ => {
+      s_.querySelector('[data-kapat]').onclick = sayfaKapat;
+      s_.querySelectorAll('[data-y]').forEach(b => b.onclick = () => { y = b.dataset.y; sayfaAc(html(), kur); });
+      s_.querySelector('[data-duvar-ekle]').onclick = () => { let n = 5; const kul = new Set(mahalFotolari(f.mahalId).map(x => x.yuzey)); while (kul.has('D' + n)) n++; y = 'D' + n; sayfaAc(html(), kur); };
+      s_.querySelector('[data-kaydet]').onclick = () => {
+        f.yuzey = y; f.gen = cmOku(s_.querySelector('#yd-gen').value); f.yuk = cmOku(s_.querySelector('#yd-yuk').value); f.yuk2 = s_.querySelector('#yd-yuk2') ? cmOku(s_.querySelector('#yd-yuk2').value) : null;
+        sayfaKapat(); kaydetSimdi(); ac(el.k, { id: f.id, ...f });
+      };
+    };
+    sayfaAc(html(), kur);
+  }
+  function menuSayfasi() {
+    sayfaAc(`${sayfaBas(f.ref ? 'Fotoğraf' : 'Kroki')}
+      <button type="button" class="btn" data-yuzey="1">${ikon('duzenle', 20)} YÜZEY VE ÖLÇÜ</button>
+      <button type="button" class="btn btn-kirmizi" data-sil="1">${ikon('sil', 20)} ${f.ref ? 'FOTOĞRAFI' : 'KROKİYİ'} SİL</button>`,
+      s_ => {
+        s_.querySelector('[data-kapat]').onclick = sayfaKapat;
+        s_.querySelector('[data-yuzey]').onclick = yuzeySayfasiDuzenle;
+        s_.querySelector('[data-sil]').onclick = async () => {
+          if (!(await onayIste(f.ref ? 'Bu fotoğraf ve üzerindeki tüm notlar silinecek.' : 'Bu kroki sayfası ve üzerindeki tüm ölçü ve notlar silinecek.'))) return;
+          const fid = f.id, ref = f.ref;
+          kirli = false; clearTimeout(kayitZaman); kayitZaman = null;
+          S.fotolar = S.fotolar.filter(x => x.id !== fid);
+          git('proje');
+          await Depo.fotoSil(ref);
+          await Depo.sil(`projeler/${S.pid}/fotolar/${fid}`).catch(e => bildir(hataMetni(e), true));
+          bildir('Fotoğraf silindi');
+        };
+      });
+  }
+
+  /* --- Hızlı ölçü: dokun, cm yaz, tamam --- */
+  let tus = null; // { p, tur, adim, deger, ilk }
+  let sonDegerler = (() => { try { const x = JSON.parse(localStorage.getItem('abm-son-cm') || '[]'); return Array.isArray(x) ? x.filter(v => typeof v === 'string').slice(0, 8) : []; } catch (e) { return []; } })();
+  function sonEkle(v) {
+    sonDegerler = [v].concat(sonDegerler.filter(x => x !== v)).slice(0, 8);
+    try { localStorage.setItem('abm-son-cm', JSON.stringify(sonDegerler)); } catch (e) { /* önemsiz */ }
+  }
+  const alanYuzey = () => f.yuzey === 'Tavan' || f.yuzey === 'Zemin';
+  const TUS_TUR = () => [['gen', alanYuzey() ? 'En' : 'Genişlik'], ['yuk', alanYuzey() ? 'Boy' : 'Yükseklik'], ['olcu', 'Ölçü'], ['kapi', 'Kapı'], ['pencere', 'Pencere']];
+  const varsayilanTur = () => f.gen == null ? 'gen' : f.yuk == null ? 'yuk' : 'olcu';
+  const cmMetre = d => { const n = sayi(d); return n == null || n <= 0 ? null : Math.round(n * 10) / 1000; };
+  function tusBaslik() {
+    const ad = (TUS_TUR().find(x => x[0] === tus.tur) || [])[1] || 'Ölçü';
+    if (tus.tur === 'kapi' || tus.tur === 'pencere') return `${ad} ${tus.adim === 0 ? 'genişliği' : 'yüksekliği'}`;
+    return ad;
+  }
+  function tusAc(p) {
+    if (tus) { tus.p = p; cizSvg(); tusGorunur(); return; }
+    tus = { p, tur: varsayilanTur(), adim: 0, deger: '', ilk: null };
+    tusCiz();
+    document.addEventListener('keydown', tusKlavye);
+  }
+  function tusKapat() {
+    document.removeEventListener('keydown', tusKlavye);
+    if (!tus) return;
+    tus = null;
+    const pnl = el.k && el.k.querySelector('[data-tus-panel]');
+    if (pnl) pnl.remove();
+    if (el.svg) cizSvg();
+  }
+  function tusCiz() {
+    if (!tus || !el.k) return;
+    let pnl = el.k.querySelector('[data-tus-panel]');
+    if (!pnl) { pnl = document.createElement('div'); pnl.className = 'tus-panel'; pnl.dataset.tusPanel = '1'; pnl.setAttribute('role', 'dialog'); pnl.setAttribute('aria-label', 'Ölçü gir'); el.k.appendChild(pnl); }
+    const tusTur = TUS_TUR();
+    pnl.innerHTML = `
+      <div class="tus-ust"><span class="tus-baslik" data-tus-baslik="1"></span><button type="button" class="ikon-btn" data-tus-kapat="1" aria-label="Kapat">${ikon('kapat')}</button></div>
+      <div class="tus-turler" role="group" aria-label="Ölçünün türü">${tusTur.map(([a, ad]) => `<button type="button" class="cip" data-tus-tur="${a}" aria-pressed="${a === tus.tur}">${esc(ad)}</button>`).join('')}</div>
+      <div class="tus-ekran" aria-live="polite"><b data-tus-deger="1"></b><span data-tus-m="1"></span></div>
+      ${sonDegerler.length ? `<div class="tus-son">${sonDegerler.map(v => `<button type="button" class="cip" data-tus-son="${esc(v)}">${esc(v)}</button>`).join('')}</div>` : ''}
+      <div class="tus-izgara">${['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', '⌫'].map(t => `<button type="button" class="tus" data-tus="${t}" aria-label="${t === '⌫' ? 'Sil' : t === ',' ? 'Virgül' : t}">${t}</button>`).join('')}</div>
+      <button type="button" class="tus tus-tamam" data-tus-tamam="1">TAMAM</button>`;
+    pnl.querySelector('[data-tus-kapat]').onclick = tusKapat;
+    pnl.querySelectorAll('[data-tus-tur]').forEach(b => b.onclick = () => { tus.tur = b.dataset.tusTur; tus.adim = 0; tus.ilk = null; tusCiz(); });
+    pnl.querySelectorAll('[data-tus-son]').forEach(b => b.onclick = () => { tus.deger = b.dataset.tusSon; tusGuncelle(); });
+    pnl.querySelectorAll('[data-tus]').forEach(b => b.onclick = () => tusBas(b.dataset.tus));
+    pnl.querySelector('[data-tus-tamam]').onclick = tusTamam;
+    tusGuncelle();
+    cizSvg();
+    tusGorunur();
+  }
+  function tusGuncelle() {
+    const pnl = el.k && el.k.querySelector('[data-tus-panel]');
+    if (!pnl || !tus) return;
+    pnl.querySelector('[data-tus-baslik]').textContent = tusBaslik() + (tus.adim === 1 && tus.ilk != null ? ` · gen. ${cmG(tus.ilk)} cm` : '');
+    pnl.querySelector('[data-tus-deger]').innerHTML = `${esc(tus.deger || '0')}<small>cm</small>`;
+    const m = cmMetre(tus.deger);
+    pnl.querySelector('[data-tus-m]').textContent = m != null ? `= ${fmtO(m)} m` : '';
+    pnl.querySelector('[data-tus-tamam]').disabled = m == null;
+    pnl.querySelector('[data-tus-tamam]').textContent = (tus.tur === 'kapi' || tus.tur === 'pencere') && tus.adim === 0 ? 'SONRA: YÜKSEKLİK' : 'TAMAM';
+  }
+  function tusBas(t) {
+    if (!tus) return;
+    let d = tus.deger;
+    if (t === '⌫') d = d.slice(0, -1);
+    else if (t === ',') { if (!d.includes(',')) d = (d || '0') + ','; }
+    else if (d.replace(',', '').length < 6) { if (!(d.includes(',') && d.split(',')[1].length >= 1)) d += t; }
+    tus.deger = d;
+    tusGuncelle();
+  }
+  function tusKlavye(e) {
+    if (!tus || $('#sayfa-kok').children.length) return;
+    if (/^[0-9]$/.test(e.key)) { tusBas(e.key); e.preventDefault(); }
+    else if (e.key === ',' || e.key === '.') { tusBas(','); e.preventDefault(); }
+    else if (e.key === 'Backspace') { tusBas('⌫'); e.preventDefault(); }
+    else if (e.key === 'Enter') { tusTamam(); e.preventDefault(); }
+    else if (e.key === 'Escape') { tusKapat(); e.preventDefault(); }
+  }
+  // Panel noktanın üstünü kapatıyorsa fotoğrafı kaydır
+  function tusGorunur() {
+    requestAnimationFrame(() => {
+      const pnl = el.k && el.k.querySelector('[data-tus-panel]');
+      if (!pnl || !tus || !el.sahne) return;
+      const pr = pnl.getBoundingClientRect(), sr = el.sahne.getBoundingClientRect();
+      const sx = sr.left + tx + tus.p[0] * s, sy = sr.top + ty + tus.p[1] * s;
+      if (pr.width < sr.width * 0.8) { if (sx > pr.left - 50) { tx -= sx - (pr.left - 90); uygula(); } }
+      else if (sy > pr.top - 50 && pr.top > sr.top + 80) { ty -= sy - Math.max(sr.top + 60, pr.top - 90); uygula(); }
+    });
+  }
+  function olcuNotu(p, m, dikey, rol, etk) {
+    const L = Math.min(f.w, f.h) * 0.22;
+    let a = dikey ? [p[0], p[1] - L / 2] : [p[0] - L / 2, p[1]];
+    let b = dikey ? [p[0], p[1] + L / 2] : [p[0] + L / 2, p[1]];
+    a = sinirla(a); b = sinirla(b);
+    const n = { t: 'olcu', a, b, v: fmtO(m), deger: m, etiket: etk || '' };
+    if (rol) n.rol = rol;
+    return n;
+  }
+  function tusTamam() {
+    if (!tus) return;
+    const m = cmMetre(tus.deger);
+    if (m == null) return;
+    sonEkle(tus.deger);
+    const p = tus.p, tur = tus.tur;
+    if (tur === 'gen' || tur === 'yuk') {
+      const ad = (TUS_TUR().find(x => x[0] === tur) || [])[1];
+      // yükseklik etiketi genişliğin üstüne binmesin
+      const yakin = notlar.some(n => n.rol && n.rol !== tur && n.t === 'olcu' && Math.hypot((n.a[0] + n.b[0]) / 2 - p[0], (n.a[1] + n.b[1]) / 2 - p[1]) < Math.min(f.w, f.h) * 0.08);
+      const q = yakin ? sinirla([p[0] + Math.min(f.w, f.h) * 0.12, p[1]]) : p;
+      degistir(() => { notlar = notlar.filter(n => n.rol !== tur); notlar.push(olcuNotu(q, m, tur === 'yuk' && !alanYuzey(), tur, ad)); });
+      f[tur] = m; altBaslikYaz(); kaydetSimdi(); guncelle();
+      const sonraki = varsayilanTur();
+      if (sonraki !== 'olcu' && sonraki !== tur) { tus.tur = sonraki; tus.adim = 0; tus.deger = ''; tusCiz(); bildir(`${ad} ${fmtO(m)} m kaydedildi`); }
+      else { tusKapat(); bildir(`${ad} ${fmtO(m)} m kaydedildi`); }
+      return;
+    }
+    if (tur === 'olcu') {
+      degistir(() => notlar.push(olcuNotu(p, m, false, null, '')));
+      tusKapat();
+      return;
+    }
+    // kapı / pencere: önce genişlik sonra yükseklik
+    if (tus.adim === 0) { tus.ilk = m; tus.adim = 1; tus.deger = ''; tusGuncelle(); return; }
+    const gen = tus.ilk, yuk = m;
+    const H = Math.min(f.w, f.h) * 0.3;
+    let W = H * gen / yuk; W = Math.min(W, f.w * 0.6);
+    const x = Math.max(0, Math.min(f.w - W, p[0] - W / 2)), y = Math.max(0, Math.min(f.h - H, p[1] - H / 2));
+    const n = { t: 'bosluk', r: [x, y, W, H], tur, gen, yuk, sol: null, den: null, dusBoya: true, kapiBoya: tur === 'kapi', kod: sonrakiKod(tur, null) };
+    degistir(() => notlar.push(n));
+    tusKapat();
+    bildir(`${n.kod} ${fmtO(gen)} × ${fmtO(yuk)} eklendi`);
+  }
+
+  return { ac, kapat, disGuncelleme };
+})();
+/* ===== Metraj özeti (aşama 1: ölçülerden hesaplanan alanlar) ===== */
+function metrajHesapla() {
+  const satirlar = [];
+  const toplam = { duvarNet: 0, tavan: 0, zemin: 0, kapi: 0, pencere: 0, balkon: 0, aciklik: 0, supurgelik: 0, kapiBoya: 0, dogramaBoya: 0 };
+  mahalSirali().forEach(m => {
+    const fl = mahalFotolari(m.id);
+    const bosluklar = [];
+    fl.forEach(f => (f.notlar || []).forEach(n => { if (n.t === 'bosluk') bosluklar.push({ ...n, yuzey: f.yuzey, duvar: duvarMi(f.yuzey) }); }));
+    const duvarBosluk = bosluklar.filter(b => b.duvar);
+    const dus = duvarBosluk.filter(b => b.dusBoya !== false && b.gen != null && b.yuk != null).reduce((a, b) => a + b.gen * b.yuk, 0);
+    const kalemler = [];
+    let brut = null, hesap = '';
+    // Aynı duvarın birden fazla sayfası olabilir (foto + kroki): her duvar bir kez, ölçülü ilk sayfadan
+    const duvarHarita = new Map();
+    fl.forEach(f => { if (duvarMi(f.yuzey) && f.gen != null && f.yuk != null && !duvarHarita.has(f.yuzey)) duvarHarita.set(f.yuzey, f); });
+    const duvarlar = [...duvarHarita.values()].sort((a, b) => yuzeySira(a.yuzey) - yuzeySira(b.yuzey));
+    if (m.en != null && m.boy != null && m.h != null) {
+      // Mahal ölçüsünden 4 duvar; o duvara ayrı ölçü girildiyse (eğimli merdiven duvarı vb.) o ölçü kullanılır
+      const dort = ['D1', 'D2', 'D3', 'D4'];
+      const ayri = duvarlar.filter(f => dort.includes(f.yuzey) && (egimli(f) || Math.abs(yuzeyAlan(f) - (f.yuzey === 'D1' || f.yuzey === 'D3' ? m.en : m.boy) * m.h) > 0.0005));
+      const ek = duvarlar.filter(f => !dort.includes(f.yuzey));
+      if (!ayri.length && !ek.length) {
+        brut = 2 * (m.en + m.boy) * m.h;
+        hesap = `2×(${fmt(m.en)}+${fmt(m.boy)})×${fmt(m.h)}`;
+      } else {
+        const parca = dort.map(y => {
+          const f = ayri.find(x => x.yuzey === y);
+          if (f) return { a: yuzeyAlan(f), t: `${y} ${yuzeyHesapMetni(f)}` };
+          const g = (y === 'D1' || y === 'D3') ? m.en : m.boy;
+          return { a: g * m.h, t: `${y} ${fmt(g)}×${fmt(m.h)}` };
+        }).concat(ek.map(f => ({ a: yuzeyAlan(f), t: `${f.yuzey} ${yuzeyHesapMetni(f)}` })));
+        brut = parca.reduce((a, x) => a + x.a, 0);
+        hesap = parca.map(x => x.t).join(' + ');
+      }
+    } else if (duvarlar.length) {
+      brut = duvarlar.reduce((a, f) => a + yuzeyAlan(f), 0);
+      hesap = duvarlar.map(f => `${f.yuzey} ${yuzeyHesapMetni(f)}`).join(' + ');
+    }
+    if (brut != null) {
+      const net = brut - dus;
+      kalemler.push({ kalem: 'Duvar alanı (net)', hesap: hesap + (dus ? ` − boşluk ${fmt(dus)}` : ''), miktar: net, birim: 'm²' });
+      toplam.duvarNet += net;
+    }
+    if (m.en != null && m.boy != null) {
+      const a = m.en * m.boy;
+      kalemler.push({ kalem: 'Tavan alanı', hesap: `${fmt(m.en)}×${fmt(m.boy)}`, miktar: a, birim: 'm²' });
+      kalemler.push({ kalem: 'Zemin alanı', hesap: `${fmt(m.en)}×${fmt(m.boy)}`, miktar: a, birim: 'm²' });
+      toplam.tavan += a; toplam.zemin += a;
+      const kesen = duvarBosluk.filter(b => b.tur !== 'pencere' && b.gen != null).reduce((x, b) => x + b.gen, 0);
+      const sup = 2 * (m.en + m.boy) - kesen;
+      kalemler.push({ kalem: 'Süpürgelik', hesap: `2×(${fmt(m.en)}+${fmt(m.boy)})${kesen ? ' − kapı/açıklık ' + fmt(kesen) : ''}`, miktar: sup, birim: 'mt' });
+      toplam.supurgelik += sup;
+    } else {
+      fl.filter(f => (f.yuzey === 'Tavan' || f.yuzey === 'Zemin') && f.gen != null && f.yuk != null).forEach(f => {
+        const a = f.gen * f.yuk;
+        kalemler.push({ kalem: f.yuzey + ' alanı', hesap: `${fmt(f.gen)}×${fmt(f.yuk)}`, miktar: a, birim: 'm²' });
+        if (f.yuzey === 'Tavan') toplam.tavan += a; else toplam.zemin += a;
+      });
+    }
+    const bListe = l => l.map(b => `${b.kod || ''} ${b.gen != null ? fmt(b.gen) : '?'}×${b.yuk != null ? fmt(b.yuk) : '?'}`).join(', ');
+    ['kapi', 'pencere', 'balkon', 'aciklik'].forEach(t => {
+      const l = bosluklar.filter(b => b.tur === t);
+      if (!l.length) return;
+      kalemler.push({ kalem: BOSLUK_TUR[t].ad, hesap: bListe(l), miktar: l.length, birim: 'adet' });
+      toplam[t] += l.length;
+    });
+    // Boşluk ekranındaki ikinci kutucuk: kapıda "kapı boyası", pencerede "doğrama boyanacak"
+    const boyaVar = b => b.kapiBoya != null ? b.kapiBoya : (b.tur === 'kapi' || b.tur === 'balkon');
+    const kapiBoya = bosluklar.filter(b => (b.tur === 'kapi' || b.tur === 'balkon') && boyaVar(b));
+    if (kapiBoya.length) { kalemler.push({ kalem: 'Kapı boyası', hesap: bListe(kapiBoya), miktar: kapiBoya.length, birim: 'adet' }); toplam.kapiBoya += kapiBoya.length; }
+    const dogrBoya = bosluklar.filter(b => b.tur === 'pencere' && b.kapiBoya === true);
+    if (dogrBoya.length) { kalemler.push({ kalem: 'Pencere doğrama boyası', hesap: bListe(dogrBoya), miktar: dogrBoya.length, birim: 'adet' }); toplam.dogramaBoya += dogrBoya.length; }
+    satirlar.push({ mahal: m, kalemler, fotoSay: fl.length, not: (m.not || '').trim(), detaySay: (m.detaylar || []).filter(d => (d.cizgiler || []).length).length });
+  });
+  return { satirlar, toplam };
+}
+function cizOzet(k) {
+  const p = proje();
+  const { satirlar, toplam } = metrajHesapla();
+  k.innerHTML = `
+    <div class="bas">
+      <button class="ikon-btn" type="button" data-geri="1" aria-label="Keşfe dön">${ikon('geri', 26)}</button>
+      <div class="baslik"><b>Metraj özeti</b><span>${esc(p ? p.ad : '')} · fiyatlandırma ofiste</span></div>
+    </div>
+    <div class="govde">
+      <div class="toplam">
+        <div><span>Duvar alanı (net)</span><b>${fmt(toplam.duvarNet)} m²</b></div>
+        <div><span>Tavan alanı</span><b>${fmt(toplam.tavan)} m²</b></div>
+        <div><span>Zemin alanı</span><b>${fmt(toplam.zemin)} m²</b></div>
+        <div><span>Kapı / Pencere</span><b>${toplam.kapi + toplam.balkon} / ${toplam.pencere} adet</b></div>
+      </div>
+      ${satirlar.length ? `<div style="overflow-x:auto"><table class="tablo">
+        <thead><tr><th>Kalem</th><th>Hesap</th><th class="sayi">Miktar</th></tr></thead>
+        <tbody>${satirlar.map(s => `<tr class="ara"><td colspan="3">${esc(s.mahal.ad)} <span style="font-weight:500;color:var(--gri)">· ${s.fotoSay} foto${s.detaySay ? ' · ' + s.detaySay + ' çizim' : ''}</span></td></tr>
+          ${s.kalemler.length ? s.kalemler.map(x => `<tr><td>${esc(x.kalem)}</td><td style="color:var(--gri);font-size:13px">${esc(x.hesap)}</td><td class="sayi"><b>${x.birim === 'adet' ? x.miktar : fmt(x.miktar)}</b> ${esc(x.birim)}</td></tr>`).join('') : `<tr><td colspan="3" style="color:var(--gri)">Ölçü girilmedi</td></tr>`}
+          ${s.not ? `<tr><td>Notlar</td><td colspan="2" style="white-space:pre-wrap;font-size:14px">${esc(s.not)}</td></tr>` : ''}`).join('')}
+        </tbody></table></div>` : `<div class="bos">Henüz mahal yok.</div>`}
+      <p class="not-kucuk" style="margin:0;line-height:1.45">Mahal notları tabloda ve CSV'de mahalin altında çıkar; detay çizimleri uygulamada kalır. Duvar alanı mahal ölçüsünden (çevre × yükseklik) hesaplanır. Bir duvara ayrı ölçü girildiyse (eğimli merdiven duvarı, farklı genişlik) o duvar kendi ölçüsüyle hesaplanır; Duvar 5 ve sonrası eklenir. Mahal ölçüsü yoksa duvarlar tek tek toplanır. Düşülen boşluklar sadece foto/kroki üzerine girilen kapı ve pencerelerdir. İki odanın ortak kapısı her iki odada girilirse kapı boyası iki kez sayılır.</p>
+    </div>
+    <div class="alt"><button type="button" class="btn btn-sari" data-csv="1">${ikon('indir', 24)} TABLOYU İNDİR (CSV)</button></div>`;
+  k.querySelector('[data-geri]').onclick = () => git('proje');
+  k.querySelector('[data-csv]').onclick = () => csvIndir(p, satirlar);
+}
+
+/* ===== Dosya verme: Paylaş menüsü (Drive vb.) ya da İndirilenler ===== */
+function dosyaIndir(ad, blob) {
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = u; a.download = ad; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 8000);
+}
+function paylasilabilir(ad, blob) {
+  try { const d = new File([blob], ad, { type: blob.type }); return !!(navigator.canShare && navigator.canShare({ files: [d] })); } catch (e) { return false; }
+}
+// Hazır dosya için seçim paneli. Paylaş için kullanıcının dokunuşu gerekir, o yüzden ayrı düğme.
+function dosyaVer(ad, blob, baslik, aciklama) {
+  const paylas = paylasilabilir(ad, blob);
+  sayfaAc(`${sayfaBas(baslik || 'Dosya hazır')}
+    <p style="margin:0;font-size:16px;line-height:1.45"><b>${esc(ad)}</b>${aciklama ? '<br>' + aciklama : ''}</p>
+    ${paylas ? `<button type="button" class="btn btn-sari" data-paylas="1">PAYLAŞ → DRIVE</button>` : ''}
+    <button type="button" class="btn ${paylas ? '' : 'btn-sari'}" data-indir="1">${ikon('indir', 22)} CİHAZA İNDİR</button>
+    <p class="not-kucuk" style="margin:0;line-height:1.45">${paylas ? 'Paylaş menüsünde <b>Drive</b>\'ı seç, iş klasörünü göster. ' : ''}İndirilen dosya tabletin <b>İndirilenler</b> klasörüne gider; Dosyalarım uygulamasından Drive'daki iş klasörüne taşıyabilirsin.</p>`,
+    el => {
+      el.querySelector('[data-kapat]').onclick = sayfaKapat;
+      const p = el.querySelector('[data-paylas]');
+      if (p) p.onclick = async () => {
+        try { await navigator.share({ files: [new File([blob], ad, { type: blob.type })], title: ad }); sayfaKapat(); bildir('Paylaşıldı'); }
+        catch (e) { if (!e || e.name !== 'AbortError') bildir('Paylaşılamadı. İndir düğmesini kullan.', true); }
+      };
+      el.querySelector('[data-indir]').onclick = () => { dosyaIndir(ad, blob); sayfaKapat(); bildir('İndirilenler klasörüne kaydedildi'); };
+    });
+}
+
+async function csvIndir(p, satirlar) {
+  const h = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const satir = [['Mahal', 'Kalem', 'Hesap', 'Miktar', 'Birim'].map(h).join(';')];
+  satirlar.forEach(s => {
+    s.kalemler.forEach(x => satir.push([s.mahal.ad, x.kalem, x.hesap, x.birim === 'adet' ? String(x.miktar) : fmt(x.miktar), x.birim].map(h).join(';')));
+    if (s.not) s.not.split('\n').map(x => x.trim()).filter(Boolean).forEach(x => satir.push([s.mahal.ad, 'Not', x, '', ''].map(h).join(';')));
+    if (s.detaySay) satir.push([s.mahal.ad, 'Not', s.detaySay + ' detay çizimi (uygulamada)', '', ''].map(h).join(';'));
+  });
+  const metin = '﻿' + satir.join('\r\n');
+  const ad = ((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60) + ' - metraj.csv';
+  let dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (dl) {
+    try { await dl.save({ filename: ad, data: metin }); bildir('Tablo indirildi'); }
+    catch (e) { if (e && e.code !== 'declined') bildir('İndirilemedi. Tekrar dene.', true); }
+    return;
+  }
+  dosyaVer(ad, new Blob([metin], { type: 'text/csv' }), 'Metraj tablosu', 'Excel\'de açılır (noktalı virgüllü CSV).');
+}
+
+/* ===== Yedek: proje + mahaller + fotoğraflar tek .json dosyada ===== */
+const YEDEK_TUR = 'ABM-KESIF-YEDEK';
+const blobDataURL = b => new Promise((coz, red) => { const r = new FileReader(); r.onload = () => coz(r.result); r.onerror = () => red(r.error); r.readAsDataURL(b); });
+function dataURLBlob(u) {
+  const v = u.indexOf(',');
+  const tip = (u.slice(5, v).split(';')[0]) || 'image/jpeg';
+  const ham = atob(u.slice(v + 1));
+  const d = new Uint8Array(ham.length);
+  for (let i = 0; i < ham.length; i++) d[i] = ham.charCodeAt(i);
+  return new Blob([d], { type: tip });
+}
+const bugunMetni = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
+async function yedekAl(p) {
+  let dl = null;
+  try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  const fl = S.fotolar.slice(), eksik = [];
+  const fotolar = [];
+  for (let i = 0; i < fl.length; i++) {
+    sayfaAc(`${sayfaBas('Yedek hazırlanıyor')}<p style="margin:0;font-size:17px">Fotoğraf ${i + 1} / ${fl.length}…</p>`);
+    const f = fl[i];
+    let veri = null;
+    if (f.ref) {
+      const b = await Depo.fotoBlob(f.ref);
+      if (b) { try { veri = await blobDataURL(b); } catch (e) { veri = null; } }
+      if (!veri) eksik.push(f.id);
+    }
+    fotolar.push({ ...f, veri });
+  }
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v9', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  sayfaKapat();
+  const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
+  const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
+  if (!dl) {
+    dosyaVer(ad, yBlob, 'Yedek hazır', (eksik.length ? `<span style="color:var(--kirmizi)">${eksik.length} fotoğraf okunamadı (sadece ölçü/notları var).</span><br>` : '') + 'Fotoğraflar, ölçüler ve notlar bu tek dosyada. Drive\'daki iş klasörüne koy.');
+    return;
+  }
+  try {
+    await dl.save({ filename: ad, data: yBlob });
+    bildir(eksik.length ? `Yedek indirildi, ama ${eksik.length} fotoğraf okunamadı (sadece ölçü/notları var).` : 'Yedek indirildi. Drive\'daki iş klasörüne koy.', eksik.length > 0);
+  } catch (e) { if (e && e.code !== 'declined') bildir('Yedek indirilemedi. Tekrar dene.', true); }
+}
+async function yedekYukle(dosya) {
+  let y;
+  try { y = JSON.parse(await dosya.text()); } catch (e) { bildir('Dosya okunamadı. ABM Keşif yedeği (.json) seç.', true); return; }
+  if (!y || y.tur !== YEDEK_TUR || !y.proje) { bildir('Bu dosya ABM Keşif yedeği değil.', true); return; }
+  const pid = Depo.yeniId(), simdi = new Date().toISOString();
+  const pr = { ...y.proje }; delete pr.id;
+  if (S.projeler.some(x => x.ad === pr.ad)) pr.ad = (pr.ad || 'Keşif') + ' (yedekten)';
+  pr.guncelleme = simdi;
+  const midHarita = new Map();
+  try {
+    sayfaAc(`${sayfaBas('Yedek yükleniyor')}<p style="margin:0;font-size:17px">Keşif açılıyor…</p>`);
+    await Depo.yaz(`projeler/${pid}`, pr).catch(e => { if (!e || e.code !== 'kuyrukta') throw e; });
+    for (const m of (y.mahaller || [])) {
+      const id = Depo.yeniId(); midHarita.set(m.id, id);
+      const v = { ...m }; delete v.id;
+      await Depo.yaz(`projeler/${pid}/mahaller/${id}`, v).catch(e => { if (!e || e.code !== 'kuyrukta') throw e; });
+    }
+    const fl = y.fotolar || [];
+    for (let i = 0; i < fl.length; i++) {
+      sayfaAc(`${sayfaBas('Yedek yükleniyor')}<p style="margin:0;font-size:17px">Fotoğraf ${i + 1} / ${fl.length}…</p>`);
+      const f = { ...fl[i] }, veri = f.veri; delete f.veri; delete f.id;
+      f.mahalId = midHarita.get(f.mahalId) || f.mahalId;
+      f.ref = null;
+      if (veri) { try { f.ref = await Depo.fotoYerelKoy(dataURLBlob(veri)); } catch (e) { f.ref = null; } }
+      await Depo.yaz(`projeler/${pid}/fotolar/${Depo.yeniId()}`, f).catch(e => { if (!e || e.code !== 'kuyrukta') throw e; });
+    }
+  } catch (e) {
+    sayfaKapat(); bildir(hataMetni(e), true); return;
+  }
+  sayfaKapat();
+  S.projeler = S.projeler.filter(x => x.id !== pid).concat([{ id: pid, ...pr }]);
+  projeAc(pid);
+  setTimeout(yerelFotolariTasi, 800);
+  bildir(`"${pr.ad}" yedekten yüklendi`);
+}
+
+/* ===== Ekranı açık tut (sahada ekran kararmasın) ===== */
+let uyanikKilit = null;
+async function uyanikTut() {
+  try { if ('wakeLock' in navigator && document.visibilityState === 'visible' && !uyanikKilit) { uyanikKilit = await navigator.wakeLock.request('screen'); uyanikKilit.addEventListener('release', () => { uyanikKilit = null; }); } } catch (e) { uyanikKilit = null; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') uyanikTut(); });
+document.addEventListener('pointerdown', uyanikTut, { once: true });
+
+/* ===== Başlangıç ===== */
+$('#dosya-kamera').addEventListener('change', dosyaSecildi);
+$('#dosya-galeri').addEventListener('change', dosyaSecildi);
+$('#dosya-yedek').addEventListener('change', e => { const d = e.target.files && e.target.files[0]; if (d) yedekYukle(d); });
+document.addEventListener('click', e => { const k = e.target.closest('[data-kapat]'); if (k && !k.onclick) sayfaKapat(); });
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !window.claude) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+(async () => {
+  ciz();
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* önemsiz */ }
+  await Depo.baslat();
+  try { const a = await Depo.oku('ayarlar/genel'); if (a && Array.isArray(a.mahalAdlari) && a.mahalAdlari.length) S.ayarlar = a; } catch (e) { /* varsayılan */ }
+  projelereAbone();
+  if (Depo.kuyrukDinle) Depo.kuyrukDinle(() => { if (S.ekran === 'proje') ciz(); });
+  git('projeler');
+})();
+</script>
+
+</body></html>
