@@ -1,7 +1,7 @@
 // ABM Keşif ve Metraj - çevrimdışı çalışma
 // Uygulama dosyaları: önce internetten (güncel sürüm), internet yoksa önbellekten.
 // Yazı tipleri: önbellekten, arkada güncellenir.
-const SURUM = 'abm-kesif-v14-2';
+const SURUM = 'abm-kesif-v15-1';
 const KABUK = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-maskable-512.png'];
 
 self.addEventListener('install', e => {
