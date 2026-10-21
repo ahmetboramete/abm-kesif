@@ -496,6 +496,7 @@ const IK = {
   zoomEksi: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M8 11h6"/>',
   sigdir: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
   indir: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  paylas: '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/>',
   sil: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
   duzenle: '<path d="M4 20l4-1 11-11-3-3L5 16z" stroke-linejoin="round"/>',
   hizli: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h2M14 8h2M8 12h2M14 12h2M8 16h2M14 16h2"/>',
@@ -639,7 +640,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v17</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v18</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -1816,6 +1817,7 @@ const DriveSync = (() => {
     }
     return (await (await api(`${YUKLE}?uploadType=multipart&fields=id`, { method: 'POST', headers: h, body: govde({ name: ad, parents: [ebeveyn] }) })).json()).id;
   }
+  const imzaHesapla = t => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
   const dosyaAdi = s => String(s || 'Keşif').replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 80) || 'Keşif';
 
   function csvMetni(satirlar) {
@@ -1864,6 +1866,23 @@ const DriveSync = (() => {
         const m = mahal(f.mahalId);
         const fid = await dosyaYaz(f.driveRef === f.ref ? f.driveId : null, `${dosyaAdi(m ? m.ad : 'mahal')} - ${f.yuzey} - ${f.id}.jpg`, b.type ? b : new Blob([b], { type: 'image/jpeg' }), d.fotoKlasorId);
         const v = { ...(foto(f.id) || f), driveId: fid, driveRef: f.ref }; delete v.id;
+        const i = S.fotolar.findIndex(x => x.id === f.id); if (i >= 0) S.fotolar[i] = { id: f.id, ...v };
+        await Depo.yaz(`projeler/${pid}/fotolar/${f.id}`, v).catch(() => {});
+      }
+      // ölçülü kopyalar: işaret (ölçü/not) içeren her sayfa için, işaretler değiştiyse yeniden
+      for (const f of S.fotolar.slice()) {
+        if (S.pid !== pid) break;
+        const nl = f.notlar || [];
+        if (!nl.length || typeof Editor === 'undefined' || !Editor.olculuBlob) continue;
+        const imza = String(f.ref || '') + ':' + imzaHesapla(JSON.stringify(nl));
+        if (f.olculuId && f.olculuImza === imza) continue;
+        if (!d.fotoKlasorId) d.fotoKlasorId = await klasorBulYaDaAc(FOTO_AD, d.klasorId);
+        let b = null;
+        try { b = await Editor.olculuBlob(f, nl); } catch (e) { b = null; }
+        if (!b) continue;
+        const m = mahal(f.mahalId);
+        const oid = await dosyaYaz(f.olculuId || null, `${dosyaAdi(m ? m.ad : 'mahal')} - ${f.yuzey} - ${f.id} - ölçülü.jpg`, b, d.fotoKlasorId);
+        const v = { ...(foto(f.id) || f), olculuId: oid, olculuImza: imza }; delete v.id;
         const i = S.fotolar.findIndex(x => x.id === f.id); if (i >= 0) S.fotolar[i] = { id: f.id, ...v };
         await Depo.yaz(`projeler/${pid}/fotolar/${f.id}`, v).catch(() => {});
       }
@@ -2243,6 +2262,7 @@ const Editor = (() => {
       <div class="bas">
         <button class="ikon-btn" type="button" data-geri="1" aria-label="Mahallere dön">${ikon('geri', 26)}</button>
         <div class="baslik"><b>${esc((m ? m.ad : 'Mahal') + ' · ' + yuzeyAdi(f.yuzey))}</b><span data-alt-baslik="1"></span></div>
+        <button class="ikon-btn" type="button" data-paylas="1" aria-label="Ölçülü fotoğrafı paylaş">${ikon('paylas', 24)}</button>
         <button class="ikon-btn" type="button" data-not-ac="1" aria-label="Mahal notları ve çizimler">${ikon('defter', 24)}</button>
         <button class="ikon-btn" type="button" data-geri-al="1" aria-label="Geri al">${ikon('geriAl', 24)}</button>
         <button class="ikon-btn" type="button" data-menu="1" aria-label="Yüzey ve fotoğraf ayarları">${ikon('menu', 26)}</button>
@@ -2281,6 +2301,7 @@ const Editor = (() => {
     el.geriAl.onclick = geriAl;
     k.querySelector('[data-menu]').onclick = menuSayfasi;
     k.querySelector('[data-not-ac]').onclick = () => notPaneli(!notAcik);
+    k.querySelector('[data-paylas]').onclick = paylas;
     notPaneli(notAcik, true);
     k.querySelectorAll('[data-arac]').forEach(b => b.onclick = () => { arac = b.dataset.arac; secili = null; if (arac !== 'hizli') tusKapat(); guncelle(); });
     tus = null;
@@ -2475,6 +2496,7 @@ const Editor = (() => {
     clearTimeout(kayitZaman); kayitZaman = null;
     if (!f) return;
     const guncel = foto(f.id); if (guncel && guncel.ref) f.ref = guncel.ref;
+    if (guncel) ['driveId', 'driveRef', 'olculuId', 'olculuImza'].forEach(k => { if (guncel[k] !== undefined) f[k] = guncel[k]; });
     const yuv = v => Array.isArray(v) ? v.map(yuv) : (typeof v === 'number' ? Math.round(v * 10) / 10 : (v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, (k === 'gen' || k === 'yuk' || k === 'den' || k === 'sol' || k === 'deger') ? x : yuv(x)])) : v));
     const veri = { ...f, notlar: yuv(notlar) };
     delete veri.id;
@@ -2940,7 +2962,36 @@ const Editor = (() => {
     bildir(`${n.kod} ${fmtO(gen)} × ${fmtO(yuk)} eklendi`);
   }
 
-  return { ac, kapat, disGuncelleme };
+  // Fotoğraf + ölçü/not işaretleri tek JPEG (paylaşım ve Drive'daki ölçülü kopya için)
+  const resimYukle = src => new Promise((coz, red) => { const i = new Image(); i.onload = () => coz(i); i.onerror = red; i.src = src; });
+  async function olculuBlob(fx, nl) {
+    const kS = s, kF = f, kSec = secili;
+    let ic = '';
+    try { s = Math.min(1, 720 / Math.max(fx.w, fx.h)); f = fx; secili = null; ic = (nl || []).map((n, i) => ogeCiz(n, i)).join(''); }
+    finally { s = kS; f = kF; secili = kSec; }
+    const c = document.createElement('canvas'); c.width = fx.w; c.height = fx.h;
+    const g = c.getContext('2d');
+    g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, fx.w, fx.h);
+    if (fx.ref) { const url = await Depo.fotoURL(fx.ref); if (url) g.drawImage(await resimYukle(url), 0, 0, fx.w, fx.h); }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${fx.w}" height="${fx.h}" viewBox="0 0 ${fx.w} ${fx.h}">${ic}</svg>`;
+    g.drawImage(await resimYukle('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)), 0, 0);
+    return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.88));
+  }
+  async function paylas() {
+    if (!f) return;
+    kaydetSimdi();
+    let blob;
+    try { blob = await olculuBlob(f, notlar); } catch (e) { bildir('Fotoğraf hazırlanamadı', true); return; }
+    const m = mahal(f.mahalId), p = S.projeler.find(x => x.id === S.pid);
+    const ad = `${[(p && p.ad) || 'Keşif', m ? m.ad : '', f.yuzey].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]/g, '')} - ölçülü.jpg`;
+    const dosya = new File([blob], ad, { type: 'image/jpeg' });
+    if (navigator.canShare && navigator.canShare({ files: [dosya] })) {
+      try { await navigator.share({ files: [dosya], title: ad }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    dosyaIndir(ad, blob); bildir('Ölçülü fotoğraf indirildi');
+  }
+  return { ac, kapat, disGuncelleme, olculuBlob };
 })();
 /* ===== Metraj özeti (aşama 1: ölçülerden hesaplanan alanlar) ===== */
 // Fotoğraf üzerindeki ölçülerden alan parçaları: ölçüye "En" / "Boy" ve parça no verilir, aynı parçanın en×boy'u alana eklenir
@@ -3174,7 +3225,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v17', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v18', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
