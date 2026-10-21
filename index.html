@@ -152,6 +152,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .olcu-panel .op-tamam{min-height:56px;font-size:30px;padding:0}
 .olcu-panel .op-alt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .serit .plan-kucuk{background:#fff;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--f-baslik);font-weight:700;font-size:13px;color:var(--ink);padding:2px}
+.olcu-panel .op-cins{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.olcu-panel .op-cins .cip{justify-content:center;min-height:40px;padding:0 4px}
 /* ozet */
 .tablo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--card);border:2px solid var(--ink);border-radius:10px;overflow:hidden}
 .tablo th,.tablo td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--cizgi);font-size:15px;vertical-align:top}
@@ -637,7 +639,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v16</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v17</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -1014,6 +1016,8 @@ function yuzeySayfasi() {
 /* Veri (mahal.plan): kose: [[x,y]...] çizim birimi (0..1000 × 0..700), kapali: bool,
    kenar: [{uz: metre|null}] kenar i = kose[i] → kose[i+1], bosluk: [{id, kenar, tur, gen, yuk, kapiBoya}] metre */
 const PLAN_W = 1000, PLAN_H = 700, PLAN_KARE = 25;
+const KENAR_CINS = [['duvar', 'Duvar'], ['parapet', 'Parapet'], ['korkuluk', 'Korkuluk'], ['acik', 'Açık']];
+const kenarCinsAd = c => (KENAR_CINS.find(x => x[0] === c) || KENAR_CINS[0])[1];
 function planCoz(pl) {
   if (!pl || !Array.isArray(pl.kose) || pl.kose.length < 2) return null;
   const K = pl.kose, n = K.length, kapali = !!pl.kapali && n >= 4;
@@ -1024,7 +1028,7 @@ function planCoz(pl) {
     const dx = b[0] - a[0], dy = b[1] - a[1];
     const yatay = Math.abs(dx) >= Math.abs(dy);
     const g = (pl.kenar && pl.kenar[i]) || {};
-    kenar.push({ i, yatay, isaret: (yatay ? Math.sign(dx) : Math.sign(dy)) || 1, cizimUz: Math.hypot(dx, dy), uz: g.uz > 0 ? g.uz : null, girilen: g.uz > 0, turetilmis: false, tahmini: false });
+    kenar.push({ i, yatay, isaret: (yatay ? Math.sign(dx) : Math.sign(dy)) || 1, cizimUz: Math.hypot(dx, dy), uz: g.uz > 0 ? g.uz : null, girilen: g.uz > 0, turetilmis: false, tahmini: false, cins: g.cins || 'duvar' });
   }
   const uyarilar = [];
   if (kapali) {
@@ -1064,7 +1068,9 @@ function planMetraj(m) {
   if (!c || !c.kapali || c.alan == null) return null;
   const bosluklar = ((m.plan && m.plan.bosluk) || []).filter(b => b.kenar < c.kenar.length)
     .map(b => ({ ...b, kod: (BOSLUK_TUR[b.tur] || {}).kod || '', duvar: true, yuzey: 'D' + (b.kenar + 1) }));
-  return { ...c, bosluklar };
+  const duvarCevre = c.kenar.filter(k => k.cins === 'duvar').reduce((s, k) => s + k.uz, 0);
+  const supCevre = c.kenar.filter(k => k.cins === 'duvar' || k.cins === 'parapet').reduce((s, k) => s + k.uz, 0);
+  return { ...c, bosluklar, duvarCevre, supCevre };
 }
 const cmYaz = m => m == null ? '?' : String(Math.round(m * 1000) / 10).replace('.', ',');
 function planMiniSvg(pl, boy = 44) {
@@ -1122,6 +1128,7 @@ const Plan = (() => {
       </div>
       <div class="olcu-panel" data-opanel="1" hidden>
         <div class="op-ust"><b data-op-ad="1">Duvar 1</b><input id="op-uz" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="cm"><button type="button" class="btn btn-siyah op-tamam" data-op-tamam="1" aria-label="Ölçüyü gir, sonraki kenar">✓</button></div>
+        <div class="op-cins" role="group" aria-label="Kenarın cinsi">${KENAR_CINS.map(([a, ad]) => `<button type="button" class="cip" data-op-cins="${a}">${ad}</button>`).join('')}</div>
         <div class="op-alt"><button type="button" class="btn btn-kucuk" data-op-atla="1">ATLA</button><button type="button" class="btn btn-kucuk" data-op-bosluk="1">KAPI / PENCERE</button><button type="button" class="btn btn-kucuk" data-op-bitti="1">ŞERİDİ KAPAT</button></div>
         <span class="not-kucuk" data-op-not="1"></span>
       </div>
@@ -1139,6 +1146,7 @@ const Plan = (() => {
     aktif = null;
     k.querySelector('[data-op-tamam]').onclick = () => opIlerle(true);
     k.querySelector('[data-op-atla]').onclick = () => opIlerle(false);
+    k.querySelectorAll('[data-op-cins]').forEach(b => b.onclick = () => cinsAyarla(b.dataset.opCins));
     k.querySelector('[data-op-bitti]').onclick = () => { opKaydet(); opKapat(); };
     k.querySelector('[data-op-bosluk]').onclick = () => { const i = aktif; opKaydet(); opKapat(); if (i != null) kenarSayfasi(i); };
     el.opUz.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); opIlerle(true); } });
@@ -1363,9 +1371,23 @@ const Plan = (() => {
     el.opUz.value = kn.girilen ? cmG(kn.uz) : '';
     el.opUz.placeholder = kn.turetilmis ? 'boş: ' + cmYaz(kn.uz) + ' hesaplanır' : 'cm';
     const bl = pl.bosluk.filter(x => x.kenar === i).length;
+    cinsGoster();
     el.opNot.textContent = (kn.turetilmis ? 'Bu kenar diğer ölçülerden hesaplanıyor; ölçtüysen yaz, değilse ATLA. ' : '') + (bl ? bl + ' boşluk var. ' : '') + 'Klavyedeki İleri tuşu da ✓ gibi çalışır.';
     cizSvg();
     setTimeout(() => { try { el.opUz.focus(); el.opUz.select(); } catch (e) {} }, 30);
+  }
+  function cinsGoster() {
+    if (!el.op) return;
+    const c = aktif != null ? (((pl.kenar[aktif] || {}).cins) || 'duvar') : null;
+    el.op.querySelectorAll('[data-op-cins]').forEach(b => b.setAttribute('aria-pressed', b.dataset.opCins === c));
+  }
+  function cinsAyarla(cins) {
+    if (aktif == null) return;
+    const eski = ((pl.kenar[aktif] || {}).cins) || 'duvar';
+    if (eski === cins) return;
+    not(); while (pl.kenar.length <= aktif) pl.kenar.push({});
+    pl.kenar[aktif] = { ...(pl.kenar[aktif] || {}), cins };
+    kaydetPlan(); cinsGoster(); cizSvg(); cizBilgi();
   }
   function opKaydet() {
     if (aktif == null) return;
@@ -1376,6 +1398,8 @@ const Plan = (() => {
     not(); while (pl.kenar.length <= i) pl.kenar.push({});
     pl.kenar[i] = { ...(pl.kenar[i] || {}), uz: v };
     kaydetPlan(); cizBilgi();
+    const c2 = planCoz(pl);
+    if (c2 && c2.uyarilar.length) bildir(c2.uyarilar[0], true);
   }
   function opIlerle(kaydetsin) {
     if (aktif == null) return;
@@ -1462,7 +1486,8 @@ const Plan = (() => {
       const etiket = kn.girilen ? cmYaz(kn.uz) : kn.turetilmis ? '=' + cmYaz(kn.uz) : kn.tahmini ? '~' + Math.round(kn.uz * 100) + '?' : '?';
       const renk = kn.girilen ? '#121212' : kn.turetilmis ? '#4A4A46' : '#B3261E';
       s += `<text x="${tx}" y="${ty}" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,Arial,sans-serif" font-weight="700" font-size="30" fill="${renk}" paint-order="stroke" stroke="#fff" stroke-width="6"${kn.turetilmis ? ' font-style="italic"' : ''}>${esc(etiket)}</text>`;
-      if (pl.kapali) s += `<text x="${mx - nx * 24}" y="${my - ny * 24 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#8A8A84">D${kn.i + 1}</text>`;
+      if (kn.cins !== 'duvar') s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#fff" stroke-width="4" stroke-dasharray="${kn.cins === 'acik' ? '18 12' : kn.cins === 'korkuluk' ? '3 9' : '30 6'}"/>`;
+      if (pl.kapali) s += `<text x="${mx - nx * 24}" y="${my - ny * 24 + 7}" text-anchor="middle" font-family="Barlow,Arial,sans-serif" font-weight="700" font-size="19" fill="#8A8A84">D${kn.i + 1}${kn.cins !== 'duvar' ? ' · ' + kenarCinsAd(kn.cins) : ''}</text>`;
       // boşluklar
       const bl = pl.bosluk.filter(x => x.kenar === kn.i);
       bl.forEach((x, j) => {
@@ -1506,7 +1531,7 @@ const Plan = (() => {
     el.alt.textContent = `${c.kenar.length} duvar · ${girilmeyen ? girilmeyen + ' ölçü eksik' : 'ölçüler tamam'}`;
     const satir = [];
     if (c.alan != null) satir.push(`Alan <b>${fmt(c.alan)} m²</b>`, `Çevre <b>${fmt(c.cevre)} m</b>`);
-    if (c.cevre != null && h != null) satir.push(`Duvar brüt <b>${fmt(c.cevre * h)} m²</b>`);
+    if (c.cevre != null && h != null) { const dc = c.kenar.filter(k => k.cins === 'duvar').reduce((t, k) => t + k.uz, 0); satir.push(`Duvar brüt <b>${fmt(dc * h)} m²</b>`); if (c.alan != null) satir.push(`Hacim <b>${fmt(c.alan * h)} m³</b>`); }
     const uyari = c.uyarilar.concat(c.tahminVar ? ['Kırmızı ~ ölçüler çizimden tahmin; kenara dokunup gerçek ölçüyü gir.'] : (!c.koseM ? ['Kenarlara dokunup ölçü gir (cm).'] : []));
     el.bilgi.innerHTML = `<div class="metin"><b style="font-family:var(--f-govde);font-size:16px;font-weight:500">${satir.join(' · ') || 'Ölçü bekleniyor'}</b>${uyari.length ? `<span style="color:var(--kirmizi);font-weight:600">${esc(uyari.join(' '))}</span>` : '<span>Bir kenara dokun: ölçü, kapı, pencere.</span>'}</div>`;
   }
@@ -1516,6 +1541,7 @@ const Plan = (() => {
     const bl = pl.bosluk.filter(x => x.kenar === i);
     sayfaAc(`${sayfaBas('Duvar ' + (i + 1))}
       <label class="alan" for="k-uz"><span class="etiket">Uzunluk (cm)</span><input id="k-uz" type="text" inputmode="decimal" autocomplete="off" value="${kn.girilen ? esc(cmG(kn.uz)) : ''}" placeholder="${kn.turetilmis ? 'Boş bırak: ' + cmYaz(kn.uz) + ' hesaplanıyor' : 'Örn. 385'}"></label>
+      <div class="alan"><span class="etiket">Kenarın cinsi</span><div class="cipler">${KENAR_CINS.map(([a, ad]) => `<button type="button" class="cip" data-kc="${a}" aria-pressed="${kn.cins === a}">${ad}</button>`).join('')}</div></div>
       ${kn.turetilmis ? `<p class="not-kucuk" style="margin:-6px 0 0">Bu kenar diğer ölçülerden hesaplandı (${cmYaz(kn.uz)} cm). İstersen ölçtüğün değeri yaz, tutmazsa uyarı çıkar.</p>` : ''}
       <div class="alan"><span class="etiket">Bu duvardaki boşluklar</span>
         ${bl.length ? bl.map(x => `<div style="display:flex;align-items:center;gap:8px;min-height:44px;border-bottom:1px solid var(--cizgi)"><b style="flex-grow:1;font-size:17px">${esc((BOSLUK_TUR[x.tur] || {}).ad || x.tur)} · ${cmYaz(x.gen)} × ${cmYaz(x.yuk)} cm${(x.tur === 'kapi' || x.tur === 'balkon') && x.kapiBoya !== false ? ' · boyanacak' : x.tur === 'pencere' && x.kapiBoya ? ' · doğrama boyanacak' : ''}</b><button type="button" class="cip" data-bd="${esc(x.id)}">DÜZENLE</button></div>`).join('') : '<span class="not-kucuk">Yok</span>'}
@@ -1537,6 +1563,12 @@ const Plan = (() => {
         };
         s.querySelector('[data-kk]').onclick = () => { uzKaydet(); sayfaKapat(); degisti(); };
         inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); uzKaydet(); sayfaKapat(); degisti(); } });
+        s.querySelectorAll('[data-kc]').forEach(b => b.onclick = () => {
+          not(); while (pl.kenar.length <= i) pl.kenar.push({});
+          pl.kenar[i] = { ...(pl.kenar[i] || {}), cins: b.dataset.kc };
+          s.querySelectorAll('[data-kc]').forEach(x => x.setAttribute('aria-pressed', x === b));
+          kaydetPlan();
+        });
         s.querySelectorAll('[data-be]').forEach(b => b.onclick = () => { uzKaydet(); degisti(); boslukSayfasi(i, null, b.dataset.be); });
         s.querySelectorAll('[data-bd]').forEach(b => b.onclick = () => { uzKaydet(); degisti(); boslukSayfasi(i, pl.bosluk.find(x => x.id === b.dataset.bd)); });
       });
@@ -1654,6 +1686,7 @@ function dxfOlustur(p) {
       let aci = Math.atan2(uy, ux) * 180 / Math.PI; if (aci > 90.1) aci -= 180; if (aci <= -90.1) aci += 180;
       const kn = pm.kenar[i];
       yazi('OLCU', (a2[0] + b2[0]) / 2 + nx * 9, (a2[1] + b2[1]) / 2 + ny * 9, 10, (kn && kn.tahmini ? '~' : '') + String(Math.round(Lk)), Math.round(aci));
+      if (kn && kn.cins !== 'duvar') yazi('NOT', (a[0] + b[0]) / 2 - nx * 14, (a[1] + b[1]) / 2 - ny * 14, 8, kenarCinsAd(kn.cins).toUpperCase(), Math.round(aci));
       const bl = pm.bosluklar.filter(x => x.kenar === i);
       bl.forEach((x, j) => {
         const t = (j + 1) / (bl.length + 1);
@@ -2338,7 +2371,7 @@ const Editor = (() => {
     if (n.t === 'olcu') {
       const [ax, ay] = n.a, [bx, by] = n.b;
       const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, nx = -dy / L * 9 * u(), ny = dx / L * 9 * u();
-      return `<g data-i="${i}">${cizgi(`M${ax} ${ay}L${bx} ${by}M${ax - nx} ${ay - ny}L${ax + nx} ${ay + ny}M${bx - nx} ${by - ny}L${bx + nx} ${by + ny}`, sc)}${etiket((ax + bx) / 2, (ay + by) / 2, n.v ? n.v : '?', sc)}</g>`;
+      return `<g data-i="${i}">${cizgi(`M${ax} ${ay}L${bx} ${by}M${ax - nx} ${ay - ny}L${ax + nx} ${ay + ny}M${bx - nx} ${by - ny}L${bx + nx} ${by + ny}`, sc)}${etiket((ax + bx) / 2, (ay + by) / 2, (n.parca ? `P${n.parca.p} ${n.parca.rol === 'en' ? 'en' : 'boy'} ` : '') + (n.v ? n.v : '?'), sc)}</g>`;
     }
     if (n.t === 'bosluk') {
       const [x, y, w, h] = n.r;
@@ -2637,15 +2670,24 @@ const Editor = (() => {
       <label class="alan" for="o-v"><span class="etiket">Ölçü (cm)</span><input id="o-v" type="text" inputmode="decimal" placeholder="Örn. 385" value="${esc(n.deger != null ? cmG(n.deger) : '')}"></label>
       ${oneriler.length ? `<div class="cipler">${oneriler.map(([v, ad]) => `<button type="button" class="cip" data-oneri="${esc(v)}">${esc(v)} cm · ${esc(ad)}</button>`).join('')}</div>` : ''}
       <label class="alan" for="o-e"><span class="etiket">Açıklama (isteğe bağlı)</span><input id="o-e" class="yazi" type="text" placeholder="Örn. kiriş altı, niş derinliği" value="${esc(n.etiket || '')}"></label>
+      <div class="alan"><span class="etiket">Alan hesabına kat <span style="font-weight:500;text-transform:none">· aynı parçanın eni × boyu metraja alan olarak girer</span></span>
+        <div class="cipler">${[['', 'Katma'], ['en', 'En'], ['boy', 'Boy']].map(([a, ad]) => `<button type="button" class="cip" data-prol="${a}" aria-pressed="${((n.parca && n.parca.rol) || '') === a}">${ad}</button>`).join('')}</div>
+        <div class="cipler">${[1, 2, 3, 4].map(p => `<button type="button" class="cip" data-ppar="${p}" aria-pressed="${((n.parca && n.parca.p) || 1) === p}">Parça ${p}</button>`).join('')}</div>
+      </div>
       <button type="button" class="btn btn-siyah" data-kaydet="1">KAYDET</button>`,
       s_ => {
         const inp = s_.querySelector('#o-v');
         setTimeout(() => inp.focus(), 60);
         s_.querySelector('[data-kapat]').onclick = () => { sayfaKapat(); cizSvg(); };
         s_.querySelectorAll('[data-oneri]').forEach(b => b.onclick = () => { inp.value = b.dataset.oneri; });
+        let prol = (n.parca && n.parca.rol) || '', ppar = (n.parca && n.parca.p) || 1;
+        s_.querySelectorAll('[data-prol]').forEach(b => b.onclick = () => { prol = b.dataset.prol; s_.querySelectorAll('[data-prol]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+        s_.querySelectorAll('[data-ppar]').forEach(b => b.onclick = () => { ppar = Number(b.dataset.ppar); s_.querySelectorAll('[data-ppar]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+        s_.__parca = () => prol ? { rol: prol, p: ppar } : null;
         s_.querySelector('[data-kaydet]').onclick = () => {
           const v = cmOku(inp.value);
           n.v = v == null ? '' : fmtO(v); n.deger = v; n.etiket = s_.querySelector('#o-e').value.trim();
+          const pc = s_.__parca(); if (pc) n.parca = pc; else delete n.parca;
           sayfaKapat();
           if (n.rol && v != null) { f[n.rol] = v; altBaslikYaz(); }
           ekleVeyaYaz(n, i);
@@ -2901,6 +2943,16 @@ const Editor = (() => {
   return { ac, kapat, disGuncelleme };
 })();
 /* ===== Metraj özeti (aşama 1: ölçülerden hesaplanan alanlar) ===== */
+// Fotoğraf üzerindeki ölçülerden alan parçaları: ölçüye "En" / "Boy" ve parça no verilir, aynı parçanın en×boy'u alana eklenir
+function parcaAlanlari(fl) {
+  const l = [];
+  fl.forEach(f => {
+    const g = {};
+    (f.notlar || []).forEach(n => { if (n.t === 'olcu' && n.parca && n.deger > 0) { const k = n.parca.p || 1; (g[k] = g[k] || {})[n.parca.rol] = n.deger; } });
+    Object.keys(g).sort().forEach(k => { if (g[k].en > 0 && g[k].boy > 0) l.push({ ad: `${f.yuzey} P${k}`, en: g[k].en, boy: g[k].boy }); });
+  });
+  return l;
+}
 function metrajHesapla() {
   const satirlar = [];
   const toplam = { duvarNet: 0, tavan: 0, zemin: 0, kapi: 0, pencere: 0, balkon: 0, aciklik: 0, supurgelik: 0, kapiBoya: 0, dogramaBoya: 0 };
@@ -2915,18 +2967,19 @@ function metrajHesapla() {
     if (pm) {
       bosluklar.length = 0; pm.bosluklar.forEach(b => bosluklar.push(b));
       const dusP = pm.bosluklar.filter(b => b.gen != null && b.yuk != null).reduce((a, b) => a + b.gen * b.yuk, 0);
-      const kStr = pm.kenar.map(x => fmt(x.uz)).join('+');
+      const kStr = pm.kenar.filter(x => x.cins === 'duvar').map(x => fmt(x.uz)).join('+');
       if (m.h != null) {
-        const net = pm.cevre * m.h - dusP;
+        const net = pm.duvarCevre * m.h - dusP;
         kalemler.push({ kalem: 'Duvar alanı (net)', hesap: `(${kStr})×${fmt(m.h)}` + (dusP ? ` − boşluk ${fmt(dusP)}` : ''), miktar: net, birim: 'm²' });
         toplam.duvarNet += net;
       } else kalemler.push({ kalem: 'Duvar alanı', hesap: 'yükseklik girilmedi', miktar: null, birim: 'm²' });
       kalemler.push({ kalem: 'Tavan alanı', hesap: 'plandan', miktar: pm.alan, birim: 'm²' });
       kalemler.push({ kalem: 'Zemin alanı', hesap: 'plandan', miktar: pm.alan, birim: 'm²' });
       toplam.tavan += pm.alan; toplam.zemin += pm.alan;
+      if (m.h != null) kalemler.push({ kalem: 'Hacim', hesap: `${fmt(pm.alan)}×${fmt(m.h)}`, miktar: pm.alan * m.h, birim: 'm³' });
       const kesen = pm.bosluklar.filter(b => b.tur !== 'pencere' && b.gen != null).reduce((x, b) => x + b.gen, 0);
-      const sup = pm.cevre - kesen;
-      kalemler.push({ kalem: 'Süpürgelik', hesap: `çevre ${fmt(pm.cevre)}${kesen ? ' − kapı/açıklık ' + fmt(kesen) : ''}`, miktar: sup, birim: 'mt' });
+      const sup = pm.supCevre - kesen;
+      kalemler.push({ kalem: 'Süpürgelik', hesap: `${pm.supCevre === pm.cevre ? 'çevre' : 'duvar+parapet'} ${fmt(pm.supCevre)}${kesen ? ' − kapı/açıklık ' + fmt(kesen) : ''}`, miktar: sup, birim: 'mt' });
       toplam.supurgelik += sup;
       const uy = pm.uyarilar.concat(pm.tahminVar ? ['Bazı kenar ölçüleri girilmedi, çizimden tahmin edildi.'] : []);
       if (uy.length) kalemler.push({ kalem: 'UYARI', hesap: uy.join(' '), miktar: null, birim: '' });
@@ -2979,6 +3032,15 @@ function metrajHesapla() {
         if (f.yuzey === 'Tavan') toplam.tavan += a; else toplam.zemin += a;
       });
     }
+    }
+    if (!pm) {
+      const pa = parcaAlanlari(fl);
+      if (pa.length) {
+        const a = pa.reduce((x, p) => x + p.en * p.boy, 0);
+        kalemler.push({ kalem: 'Alan (fotoğraf ölçüleri)', hesap: pa.map(p => `${p.ad} ${fmt(p.en)}×${fmt(p.boy)}`).join(' + '), miktar: a, birim: 'm²' });
+        toplam.zemin += a;
+        if (m.h != null) kalemler.push({ kalem: 'Hacim', hesap: `${fmt(a)}×${fmt(m.h)}`, miktar: a * m.h, birim: 'm³' });
+      }
     }
     const bListe = l => l.map(b => `${b.kod || ''} ${b.gen != null ? fmt(b.gen) : '?'}×${b.yuk != null ? fmt(b.yuk) : '?'}`).join(', ');
     ['kapi', 'pencere', 'balkon', 'aciklik'].forEach(t => {
@@ -3112,7 +3174,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v16', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v17', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
