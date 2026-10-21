@@ -571,7 +571,8 @@ setInterval(yerelFotolariTasi, 30000);
 window.addEventListener('online', () => setTimeout(yerelFotolariTasi, 3000));
 function bekleyenSerit() {
   const n = Depo.bekleyenSayisi ? Depo.bekleyenSayisi() : 0;
-  const yerel = S.fotolar.filter(x => x.ref && x.ref.startsWith('l:')).length;
+  // Cihazdaki fotoğraflar yalnızca bulut deposu varken taşınır; cihaz modunda (GitHub sürümü) bekleyen iş yoktur
+  const yerel = Depo.mod === 'bulut' ? S.fotolar.filter(x => x.ref && x.ref.startsWith('l:')).length : 0;
   if (!n && !yerel) return '';
   return `<div role="status" style="background:${n ? 'var(--kirmizi)' : 'var(--ink)'};color:#fff;padding:8px 16px;font-weight:600;font-size:14px;flex-shrink:0">${yerel ? yerel + ' fotoğraf buluta gönderiliyor' : ''}${n && yerel ? ' · ' : ''}${n ? n + ' kayıt internet bekliyor' : ''}. Sayfayı kapatma, iş bitince bu şerit kaybolur.</div>`;
 }
@@ -640,7 +641,7 @@ function cizProjeler(k) {
   const liste = S.projeler.slice().sort((a, b) => (b.guncelleme || '').localeCompare(a.guncelleme || ''));
   k.innerHTML = `
     <div class="bas" style="padding:10px 14px">
-      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v18</span></span></div>
+      <div class="marka" style="flex-grow:1"><span class="abm">ABM</span><span class="ad"><b>KEŞİF ve METRAJ</b><span>${modMetni()} · v19</span></span></div>
     </div>
     <div class="govde">
       ${liste.length ? liste.map(p => `
@@ -743,7 +744,7 @@ function cizProje(k) {
             ${fl.map(f => `<button type="button" class="kucuk${f.ref ? '' : ' kroki-kucuk'}" data-foto="${esc(f.id)}" aria-label="${esc(m.ad + ' ' + yuzeyAdi(f.yuzey))}">${Depo.fotoURLHizli(f.ref) ? `<img src="${esc(Depo.fotoURLHizli(f.ref))}" alt="">` : ''}<i>${esc(f.yuzey)}${(f.notlar || []).length ? ' · ' + f.notlar.length : ''}</i></button>`).join('')}
             <button type="button" class="kucuk ekle" data-foto-cek="${esc(m.id)}" aria-label="${esc(m.ad)} için fotoğraf ekle">${ikon('galeri', 22)}</button>
           </div>
-          <button type="button" class="kart-not" data-mahal-not="${esc(m.id)}">${ikon('defter', 20)}<span>${esc((m.not || '').split('\n').map(x => x.trim()).filter(Boolean).join(' · ') || 'Not ve detay çizimi yok')}</span>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length ? `<b>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length} ÇİZİM</b>` : ''}</button>
+          <button type="button" class="kart-not" data-mahal-not="${esc(m.id)}">${ikon('defter', 20)}<span>${esc((m.not || '').split('\n').map(x => x.trim()).filter(Boolean).join(' · ') || ((m.detaylar || []).some(d => (d.cizgiler || []).length) ? 'Yazılı not yok' : 'Not ve detay çizimi yok'))}</span>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length ? `<b>${(m.detaylar || []).filter(d => (d.cizgiler || []).length).length} ÇİZİM</b>` : ''}</button>
         </div>`;
       }).join('') : `<div class="bos"><b>Mahal ekle</b>Alttaki <b style="font-size:inherit">+</b> düğmesiyle mahali (oda, dükkan…) ekle, <b style="font-size:inherit">planını çiz</b>, kenar ölçülerini gir. Sahada çektiğin fotoğrafları sonra galeriden eklersin.</div>`}
     </div>
@@ -3225,7 +3226,7 @@ async function yedekAl(p) {
     }
     fotolar.push({ ...f, veri });
   }
-  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v18', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
+  const yedek = { tur: YEDEK_TUR, surum: 1, uygulama: 'ABM Keşif ve Metraj v19', alinma: new Date().toISOString(), proje: { ...p }, mahaller: S.mahaller.slice(), fotolar, ayarlar: S.ayarlar };
   sayfaKapat();
   const ad = `ABM-KESIF - ${((p && p.ad) || 'kesif').replace(/[\\/:*?"<>|]/g, '').slice(0, 60)} - ${bugunMetni()}.json`;
   const yBlob = new Blob([JSON.stringify(yedek)], { type: 'application/json' });
